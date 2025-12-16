@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "684435906478",
+    "project_id": "othello-release",
+    "storage_bucket": "othello-release.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:684435906478:android:3e77befaa78c833a6e323f",
+        "android_client_info": {
+          "package_name": "net.st_wet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCzLIcoe_TcXpZarnKXhOFh70R1iWX4NQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
