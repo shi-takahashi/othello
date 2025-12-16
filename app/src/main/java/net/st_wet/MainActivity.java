@@ -1,0 +1,369 @@
+package net.st_wet;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.PopupMenu;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+
+import net.st_wet.model.Cell;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity
+{
+    private static final int REQUEST_CODE = 1;
+
+    private AdView mAdView;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            // SettingActivityから戻ってきた場合
+            case (REQUEST_CODE):
+                if (resultCode == RESULT_OK) {
+                    boolean isNeedRestart = false;
+
+                    // OKボタンを押して戻ってきたときの処理
+                    if (data == null) {
+                        return;
+                    }
+
+                    OthelloView othelloView = findViewById(R.id.othelloView);
+
+                    int level = data.getIntExtra("level", 0);
+                    if (level < 1 || level > 3) {
+                        return;
+                    }
+                    int depth = level * 2 - 1;
+                    if (othelloView.getDepth() != depth) {
+                        othelloView.setDepth(depth);
+                        // 要リスタート
+                        isNeedRestart = true;
+                    }
+
+                    boolean isFirst = data.getBooleanExtra("first", true);
+                    if (othelloView.getFirst() != isFirst) {
+                        if (isFirst) {
+                            othelloView.setTurn(Cell.E_STATUS.Black);
+                        } else {
+                            othelloView.setTurn(Cell.E_STATUS.White);
+                        }
+                        // 要リスタート
+                        isNeedRestart = true;
+                    }
+
+                    boolean isReturnalbe = data.getBooleanExtra("returnable", true);
+                    findViewById(R.id.btnBack).setEnabled(isReturnalbe);
+
+                    boolean isReset = data.getBooleanExtra("reset", false);
+
+                    // この後onResume()が走って復元されてしまうのでここで保存しておく
+                    SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putInt("level", level);
+                    editor.putBoolean("first", isFirst);
+                    editor.putBoolean("returnable", isReturnalbe);
+                    if (isReset == true) {
+                        editor.remove("resultOne");
+                        editor.remove("resultTwo");
+                        editor.remove("resultThree");
+                    }
+                    if (isNeedRestart == true) {
+                        editor.remove("currentTurn");
+                        editor.remove("cellsStatus");
+                        editor.remove("history");
+                        editor.remove("useBack");
+                        this.restart();
+                    }
+                    editor.commit();
+
+                } else if (resultCode == RESULT_CANCELED) {
+                    // キャンセルボタンを押して戻ってきたときの処理
+                } else {
+                    // その他
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+        mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+
+        findViewById(R.id.btnRestart).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                restart();
+            }
+        });
+        findViewById(R.id.btnBack).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                back();
+            }
+        });
+        findViewById(R.id.btnInterrupt).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                interrupt();
+            }
+        });
+        findViewById(R.id.btnEnd).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                end();
+            }
+        });
+        findViewById(R.id.btnMenu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu popup = new PopupMenu(getApplicationContext(), view);
+                popup.getMenuInflater().inflate(R.menu.main, popup.getMenu());
+                popup.show();
+
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        int itemId = menuItem.getItemId();
+                        if (itemId == R.id.menu_help) {
+                            showHelp();
+                        } else if (itemId == R.id.menu_result) {
+                            result();
+                        } else if (itemId == R.id.menu_setting) {
+                            setting();
+                        } else if (itemId == R.id.menu_end) {
+                            end();
+                        }
+                        return false;
+                    }
+                });
+            }
+        });
+    }
+
+    public void showHelp() {
+        Intent intent = new Intent(this, HelpActivity.class);
+        startActivity(intent);
+    }
+
+    public void restart() {
+        OthelloView othelloView = findViewById(R.id.othelloView);
+        othelloView.restart();
+    }
+
+    public void result() {
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+        intent.putExtra("level1", loadResult(1));
+        intent.putExtra("level2", loadResult(2));
+        intent.putExtra("level3", loadResult(3));
+        startActivity(intent);
+    }
+
+    public void setting() {
+        Intent intent = new Intent(MainActivity.this, SettingActivity.class);
+
+        OthelloView othelloView = findViewById(R.id.othelloView);
+
+        int level = (othelloView.getDepth() + 1) / 2;
+        intent.putExtra("level", level);
+
+        boolean isFirst = othelloView.getFirst();
+        intent.putExtra("first", isFirst);
+
+        boolean isReturnable = findViewById(R.id.btnBack).isEnabled();
+        intent.putExtra("returnable", isReturnable);
+
+
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    public void back() {
+        OthelloView othelloView = findViewById(R.id.othelloView);
+        othelloView.back();
+    }
+
+    public void interrupt() {
+        finishAndRemoveTask();
+    }
+
+    public void end() {
+        OthelloView othelloView = findViewById(R.id.othelloView);
+        othelloView.gameSet();
+        finishAndRemoveTask();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = pref.edit();
+
+        OthelloView othelloView = findViewById(R.id.othelloView);
+
+        if (othelloView.getCurrentTurn() == Cell.E_STATUS.None) {
+            editor.remove("currentTurn");
+            editor.remove("cellsStatus");
+            editor.remove("history");
+            editor.remove("useBack");
+        } else {
+            editor.putInt("currentTurn", othelloView.getCurrentTurn().ordinal());
+            editor.putString("cellsStatus", othelloView.getCellsStatus());
+            editor.putString("history", othelloView.getHistory());
+            editor.putBoolean("useBack", othelloView.getUseBack());
+        }
+
+        int level = (othelloView.getDepth() + 1) / 2;
+        editor.putInt("level", level);
+
+        boolean isFirst = othelloView.getFirst();
+        editor.putBoolean("first", isFirst);
+
+        boolean isUseBack = othelloView.getUseBack();
+        editor.putBoolean("useBack", isUseBack);
+
+        boolean isReturnalbe = findViewById(R.id.btnBack).isEnabled();
+        editor.putBoolean("returnable", isReturnalbe);
+
+        editor.commit();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        int currentTurn = pref.getInt("currentTurn", 0);
+        String cellsStatus = pref.getString("cellsStatus", null);
+        String history = pref.getString("history", null);
+        boolean bUseBack = pref.getBoolean("useBack", false);
+        int level = pref.getInt("level", 2);
+        boolean isFirst = pref.getBoolean("first", true);
+        boolean isReturnalbe = pref.getBoolean("returnable", true);
+
+        OthelloView othelloView = findViewById(R.id.othelloView);
+
+        if (history != null) {
+            othelloView.restore(currentTurn, cellsStatus, history);
+        }
+
+        othelloView.setUseBack(bUseBack);
+
+        int depth = level * 2 - 1;
+        othelloView.setDepth(depth);
+
+        if (isFirst) {
+            othelloView.setTurn(Cell.E_STATUS.Black);
+        } else {
+            othelloView.setTurn(Cell.E_STATUS.White);
+        }
+
+        findViewById(R.id.btnBack).setEnabled(isReturnalbe);
+    }
+
+    public boolean getFirst() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean isFirst = pref.getBoolean("first", true);
+        return isFirst;
+    }
+
+    public int[] loadResult(int level) {
+        String key = "";
+
+        switch (level) {
+            case 1:
+                key = "resultOne";
+                break;
+            case 2:
+                key = "resultTwo";
+                break;
+            case 3:
+                key = "resultThree";
+                break;
+            default:
+                break;
+        }
+
+        if (key == "") {
+            return null;
+        }
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        String result = pref.getString(key, null);
+
+        if (result == null) {
+            return null;
+        }
+
+        String[] sa = result.split(",", 0);
+        int[] ia = new int[sa.length];
+        for (int i = 0; i < sa.length; i++) {
+            ia[i] = Integer.parseInt(sa[i]);
+        }
+
+        return ia;
+    }
+
+    public void saveResult(int level, int point) {
+        String key = "";
+
+        switch (level) {
+            case 1:
+                key = "resultOne";
+                break;
+            case 2:
+                key = "resultTwo";
+                break;
+            case 3:
+                key = "resultThree";
+                break;
+            default:
+                break;
+        }
+
+        if (key == "") {
+            return;
+        }
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        String result = pref.getString(key, null);
+
+        if (result == null) {
+            result = String.valueOf(point);
+        } else {
+            result = result + "," + String.valueOf(point);
+        }
+
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString(key, result);
+        editor.commit();
+    }
+}
