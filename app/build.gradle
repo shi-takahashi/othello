@@ -6,6 +6,15 @@ android {
     namespace 'net.st_wet'
     compileSdk 35
 
+    signingConfigs {
+        release {
+            storeFile file('../othellokey')
+            storePassword 'gs1234'
+            keyAlias 'key0'
+            keyPassword 'gs1234'
+        }
+    }
+
     defaultConfig {
         applicationId "net.st_wet"
         minSdk 21
@@ -19,6 +28,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
