@@ -434,6 +434,28 @@ public class OthelloView extends View
     class Cpu extends Thread
     {
         public static final int UNDECIDED_SCORE = 99999;
+        public static final int INF = 100000000;
+
+        // Lv.3用定数
+        private static final int LV3_NORMAL_DEPTH = 7;           // 序盤・中盤の探索深さ
+        private static final int LV3_ENDGAME_THRESHOLD = 12;     // 終盤完全読みの閾値（残り手数）
+        private static final long LV3_TIME_LIMIT_MS = 8000;      // 思考時間上限（8秒）
+
+        // Lv.3用評価関数の重み
+        private static final int WEIGHT_POSITION = 10;           // 位置評価の重み
+        private static final int WEIGHT_MOBILITY = 80;           // 着手可能数の重み
+        private static final int WEIGHT_STABLE = 100;            // 安定石の重み
+        private static final int WEIGHT_CORNER = 500;            // 角の重み
+        private static final int WEIGHT_X_SQUARE = -150;         // X打ち（角の斜め隣）のペナルティ
+        private static final int WEIGHT_C_SQUARE = -50;          // C打ち（角の隣）のペナルティ
+
+        // Lv.3用：思考開始時刻とタイムアウトフラグ
+        private long thinkStartTime;
+        private volatile boolean isTimeout;
+
+        // Lv.3用：反復深化で見つけた最善手を保存
+        private int bestMoveR;
+        private int bestMoveC;
 
         private E_STATUS my_turn;
 
@@ -497,8 +519,11 @@ public class OthelloView extends View
                             mC = map.get("c");
                         }
                     }
+                } else if (mDepth == 5) {
+                    // Lv.3: 超強化AI
+                    thinkLv3(mBoard);
                 } else {
-                    // Lv.2以上: Alpha-Beta探索
+                    // Lv.2: Alpha-Beta探索
                     int score = alphaBeta(mBoard, mDepth, UNDECIDED_SCORE);
                 }
 
@@ -518,6 +543,457 @@ public class OthelloView extends View
 
                 mLock = false;
             }
+        }
+
+        /**
+         * Lv.3専用の思考ルーチン
+         * - 終盤完全読み
+         * - 反復深化
+         * - 改善された評価関数
+         * - 時間制限付き探索
+         */
+        private void thinkLv3(Board board) {
+            thinkStartTime = System.currentTimeMillis();
+            isTimeout = false;
+
+            ArrayList<HashMap> moves = board.getCanPutRCs(this.my_turn);
+            if (moves.size() == 0) {
+                return;
+            }
+
+            // 打てる手が1つだけならそれを選ぶ
+            if (moves.size() == 1) {
+                HashMap<String, Integer> map = moves.get(0);
+                mR = map.get("r");
+                mC = map.get("c");
+                return;
+            }
+
+            // 空きマス数を計算
+            int emptyCount = countEmpty(board);
+
+            if (emptyCount <= LV3_ENDGAME_THRESHOLD) {
+                // 終盤完全読み
+                thinkEndgame(board, emptyCount);
+            } else {
+                // 反復深化探索
+                thinkIterativeDeepening(board);
+            }
+        }
+
+        /**
+         * 終盤完全読み：石差を最大化する
+         */
+        private void thinkEndgame(Board board, int emptyCount) {
+            bestMoveR = -1;
+            bestMoveC = -1;
+
+            int bestScore = -INF;
+            ArrayList<HashMap> moves = board.getCanPutRCs(this.my_turn);
+
+            // 手を並べ替え（角優先）
+            sortMovesByPriority(moves);
+
+            for (HashMap<String, Integer> map : moves) {
+                if (checkTimeout()) break;
+
+                int r = map.get("r");
+                int c = map.get("c");
+
+                Board newBoard = board.clone();
+                newBoard.changeCell(r, c);
+                newBoard.turnOverCells(newBoard.getTurn(), r, c, false);
+                newBoard.changeTurn();
+
+                int score = -endgameSearch(newBoard, emptyCount - 1, -INF, -bestScore, this.my_turn);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMoveR = r;
+                    bestMoveC = c;
+                }
+            }
+
+            if (bestMoveR >= 0) {
+                mR = bestMoveR;
+                mC = bestMoveC;
+            }
+        }
+
+        /**
+         * 終盤探索（Negamax + Alpha-Beta）
+         */
+        private int endgameSearch(Board board, int depth, int alpha, int beta, E_STATUS originalTurn) {
+            if (checkTimeout()) return 0;
+
+            ArrayList<HashMap> moves = board.getCanPutRCs(board.getTurn());
+
+            // ゲーム終了または深さ0
+            if (depth == 0 || (moves.size() == 0 && !board.isCanPutAll(board.getOppositeTurn()))) {
+                return evalFinalScore(board, originalTurn);
+            }
+
+            // パス
+            if (moves.size() == 0) {
+                board.changeTurn();
+                return -endgameSearch(board, depth, -beta, -alpha, originalTurn);
+            }
+
+            // 手を並べ替え
+            sortMovesByPriority(moves);
+
+            int bestScore = -INF;
+
+            for (HashMap<String, Integer> map : moves) {
+                if (checkTimeout()) break;
+
+                int r = map.get("r");
+                int c = map.get("c");
+
+                Board newBoard = board.clone();
+                newBoard.changeCell(r, c);
+                newBoard.turnOverCells(newBoard.getTurn(), r, c, false);
+                newBoard.changeTurn();
+
+                int score = -endgameSearch(newBoard, depth - 1, -beta, -alpha, originalTurn);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                }
+                if (score > alpha) {
+                    alpha = score;
+                }
+                if (alpha >= beta) {
+                    break; // Beta cutoff
+                }
+            }
+
+            return bestScore;
+        }
+
+        /**
+         * 最終石差を計算
+         */
+        private int evalFinalScore(Board board, E_STATUS originalTurn) {
+            board.countCell();
+            int myCount = board.getStatusCount(originalTurn);
+            int oppCount = board.getStatusCount(Cell.getOppositeStatus(originalTurn));
+
+            int diff = myCount - oppCount;
+
+            // 現在の手番が元のプレイヤーかどうかで符号を調整
+            if (board.getTurn() == originalTurn) {
+                return diff * 100; // 石差を100倍してスコア化
+            } else {
+                return -diff * 100;
+            }
+        }
+
+        /**
+         * 反復深化探索
+         */
+        private void thinkIterativeDeepening(Board board) {
+            bestMoveR = -1;
+            bestMoveC = -1;
+
+            ArrayList<HashMap> moves = board.getCanPutRCs(this.my_turn);
+
+            // 最初の手を仮の最善手とする
+            if (moves.size() > 0) {
+                HashMap<String, Integer> firstMap = moves.get(0);
+                bestMoveR = firstMap.get("r");
+                bestMoveC = firstMap.get("c");
+                mR = bestMoveR;
+                mC = bestMoveC;
+            }
+
+            // 深さ1から開始して徐々に深くする
+            for (int depth = 1; depth <= LV3_NORMAL_DEPTH; depth++) {
+                if (checkTimeout()) break;
+
+                int[] result = alphaBetaLv3(board, depth, -INF, INF, true, this.my_turn);
+
+                if (!isTimeout && result[1] >= 0 && result[2] >= 0) {
+                    bestMoveR = result[1];
+                    bestMoveC = result[2];
+                    mR = bestMoveR;
+                    mC = bestMoveC;
+                }
+            }
+        }
+
+        /**
+         * Lv.3用のAlpha-Beta探索（Negamax形式）
+         * @return [スコア, 最善手のR, 最善手のC]
+         */
+        private int[] alphaBetaLv3(Board board, int depth, int alpha, int beta, boolean isRoot, E_STATUS originalTurn) {
+            if (checkTimeout()) {
+                return new int[]{0, -1, -1};
+            }
+
+            ArrayList<HashMap> moves = board.getCanPutRCs(board.getTurn());
+
+            // ゲーム終了判定
+            if (moves.size() == 0 && !board.isCanPutAll(board.getOppositeTurn())) {
+                return new int[]{evalFinalScore(board, originalTurn), -1, -1};
+            }
+
+            // 深さ0で評価
+            if (depth == 0) {
+                int score = evalPositionLv3(board, originalTurn);
+                // 現在の手番が元のプレイヤーでない場合は符号反転
+                if (board.getTurn() != originalTurn) {
+                    score = -score;
+                }
+                return new int[]{score, -1, -1};
+            }
+
+            // パス
+            if (moves.size() == 0) {
+                Board newBoard = board.clone();
+                newBoard.changeTurn();
+                int[] result = alphaBetaLv3(newBoard, depth, -beta, -alpha, false, originalTurn);
+                return new int[]{-result[0], -1, -1};
+            }
+
+            // 手を並べ替え（角優先、X/C打ち回避）
+            sortMovesByPriority(moves);
+
+            int bestScore = -INF;
+            int bestR = -1;
+            int bestC = -1;
+
+            for (HashMap<String, Integer> map : moves) {
+                if (checkTimeout()) break;
+
+                int r = map.get("r");
+                int c = map.get("c");
+
+                Board newBoard = board.clone();
+                newBoard.changeCell(r, c);
+                newBoard.turnOverCells(newBoard.getTurn(), r, c, false);
+                newBoard.changeTurn();
+
+                int[] result = alphaBetaLv3(newBoard, depth - 1, -beta, -alpha, false, originalTurn);
+                int score = -result[0];
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestR = r;
+                    bestC = c;
+                }
+                if (score > alpha) {
+                    alpha = score;
+                }
+                if (alpha >= beta) {
+                    break; // Beta cutoff
+                }
+            }
+
+            return new int[]{bestScore, bestR, bestC};
+        }
+
+        /**
+         * Lv.3用の高度な評価関数
+         */
+        private int evalPositionLv3(Board board, E_STATUS myTurn) {
+            E_STATUS oppTurn = Cell.getOppositeStatus(myTurn);
+            Cell[][] cells = board.getCells();
+
+            int score = 0;
+
+            // 1. 位置評価（従来のスコア表）
+            int positionScore = 0;
+            for (int r = 0; r < Board.ROWS; r++) {
+                for (int c = 0; c < Board.COLS; c++) {
+                    E_STATUS status = cells[r][c].getStatus();
+                    if (status == myTurn) {
+                        positionScore += Board.scores[r][c];
+                    } else if (status == oppTurn) {
+                        positionScore -= Board.scores[r][c];
+                    }
+                }
+            }
+            score += positionScore * WEIGHT_POSITION;
+
+            // 2. 角の確保
+            int cornerScore = 0;
+            int[][] corners = {{0, 0}, {0, 7}, {7, 0}, {7, 7}};
+            for (int[] corner : corners) {
+                E_STATUS status = cells[corner[0]][corner[1]].getStatus();
+                if (status == myTurn) {
+                    cornerScore += WEIGHT_CORNER;
+                } else if (status == oppTurn) {
+                    cornerScore -= WEIGHT_CORNER;
+                }
+            }
+            score += cornerScore;
+
+            // 3. X打ち・C打ちのペナルティ（角が空いている場合のみ）
+            int dangerScore = 0;
+            // 左上角関連
+            if (cells[0][0].getStatus() == E_STATUS.None) {
+                dangerScore += evalDangerSquare(cells, 1, 1, myTurn, oppTurn, WEIGHT_X_SQUARE);
+                dangerScore += evalDangerSquare(cells, 0, 1, myTurn, oppTurn, WEIGHT_C_SQUARE);
+                dangerScore += evalDangerSquare(cells, 1, 0, myTurn, oppTurn, WEIGHT_C_SQUARE);
+            }
+            // 右上角関連
+            if (cells[0][7].getStatus() == E_STATUS.None) {
+                dangerScore += evalDangerSquare(cells, 1, 6, myTurn, oppTurn, WEIGHT_X_SQUARE);
+                dangerScore += evalDangerSquare(cells, 0, 6, myTurn, oppTurn, WEIGHT_C_SQUARE);
+                dangerScore += evalDangerSquare(cells, 1, 7, myTurn, oppTurn, WEIGHT_C_SQUARE);
+            }
+            // 左下角関連
+            if (cells[7][0].getStatus() == E_STATUS.None) {
+                dangerScore += evalDangerSquare(cells, 6, 1, myTurn, oppTurn, WEIGHT_X_SQUARE);
+                dangerScore += evalDangerSquare(cells, 7, 1, myTurn, oppTurn, WEIGHT_C_SQUARE);
+                dangerScore += evalDangerSquare(cells, 6, 0, myTurn, oppTurn, WEIGHT_C_SQUARE);
+            }
+            // 右下角関連
+            if (cells[7][7].getStatus() == E_STATUS.None) {
+                dangerScore += evalDangerSquare(cells, 6, 6, myTurn, oppTurn, WEIGHT_X_SQUARE);
+                dangerScore += evalDangerSquare(cells, 7, 6, myTurn, oppTurn, WEIGHT_C_SQUARE);
+                dangerScore += evalDangerSquare(cells, 6, 7, myTurn, oppTurn, WEIGHT_C_SQUARE);
+            }
+            score += dangerScore;
+
+            // 4. 着手可能数（Mobility）
+            int myMobility = board.getCanPutRCs(myTurn).size();
+            int oppMobility = board.getCanPutRCs(oppTurn).size();
+            score += (myMobility - oppMobility) * WEIGHT_MOBILITY;
+
+            // 5. 安定石（確定石）の評価
+            int stableScore = countStableDiscs(cells, myTurn) - countStableDiscs(cells, oppTurn);
+            score += stableScore * WEIGHT_STABLE;
+
+            return score;
+        }
+
+        /**
+         * 危険マス（X打ち、C打ち）の評価
+         */
+        private int evalDangerSquare(Cell[][] cells, int r, int c, E_STATUS myTurn, E_STATUS oppTurn, int weight) {
+            E_STATUS status = cells[r][c].getStatus();
+            if (status == myTurn) {
+                return weight; // 自分が置いている → ペナルティ
+            } else if (status == oppTurn) {
+                return -weight; // 相手が置いている → ボーナス
+            }
+            return 0;
+        }
+
+        /**
+         * 安定石（もう返されない石）の数を数える
+         * 簡易版：角からの連続した石をカウント
+         */
+        private int countStableDiscs(Cell[][] cells, E_STATUS turn) {
+            int count = 0;
+
+            // 4つの角からそれぞれ安定石を数える
+            // 左上角から
+            count += countStableFromCorner(cells, turn, 0, 0, 1, 1);
+            // 右上角から
+            count += countStableFromCorner(cells, turn, 0, 7, 1, -1);
+            // 左下角から
+            count += countStableFromCorner(cells, turn, 7, 0, -1, 1);
+            // 右下角から
+            count += countStableFromCorner(cells, turn, 7, 7, -1, -1);
+
+            return count;
+        }
+
+        /**
+         * 角から連続する安定石を数える
+         */
+        private int countStableFromCorner(Cell[][] cells, E_STATUS turn, int startR, int startC, int dr, int dc) {
+            if (cells[startR][startC].getStatus() != turn) {
+                return 0;
+            }
+
+            int count = 0;
+
+            // 角から辺に沿って連続する石を数える
+            // 縦方向
+            int r = startR;
+            while (r >= 0 && r < Board.ROWS && cells[r][startC].getStatus() == turn) {
+                count++;
+                r += dr;
+            }
+
+            // 横方向
+            int c = startC + dc;
+            while (c >= 0 && c < Board.COLS && cells[startR][c].getStatus() == turn) {
+                count++;
+                c += dc;
+            }
+
+            return count;
+        }
+
+        /**
+         * 空きマス数を数える
+         */
+        private int countEmpty(Board board) {
+            int count = 0;
+            Cell[][] cells = board.getCells();
+            for (int r = 0; r < Board.ROWS; r++) {
+                for (int c = 0; c < Board.COLS; c++) {
+                    if (cells[r][c].getStatus() == E_STATUS.None) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        /**
+         * 手を優先度順に並べ替え（角優先、X/C打ち回避）
+         */
+        private void sortMovesByPriority(ArrayList<HashMap> moves) {
+            moves.sort((a, b) -> {
+                int ra = (int) a.get("r");
+                int ca = (int) a.get("c");
+                int rb = (int) b.get("r");
+                int cb = (int) b.get("c");
+
+                int prioA = getMovePriority(ra, ca);
+                int prioB = getMovePriority(rb, cb);
+
+                return prioB - prioA; // 高い優先度が先
+            });
+        }
+
+        /**
+         * 手の優先度を返す
+         */
+        private int getMovePriority(int r, int c) {
+            // 角は最優先
+            if ((r == 0 || r == 7) && (c == 0 || c == 7)) {
+                return 100;
+            }
+            // 辺は次に優先
+            if (r == 0 || r == 7 || c == 0 || c == 7) {
+                // ただしC打ちは低優先
+                if ((r == 0 || r == 7) && (c == 1 || c == 6)) return -10;
+                if ((r == 1 || r == 6) && (c == 0 || c == 7)) return -10;
+                return 50;
+            }
+            // X打ちは最低優先
+            if ((r == 1 || r == 6) && (c == 1 || c == 6)) {
+                return -50;
+            }
+            // その他は中程度
+            return 0;
+        }
+
+        /**
+         * タイムアウトチェック
+         */
+        private boolean checkTimeout() {
+            if (System.currentTimeMillis() - thinkStartTime > LV3_TIME_LIMIT_MS) {
+                isTimeout = true;
+            }
+            return isTimeout;
         }
 
         private int alphaBeta(Board _board, int _depth, int _score) {
