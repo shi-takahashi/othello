@@ -16,13 +16,14 @@
         android:padding="6dp">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRestart"
-            style="@style/MainButton"
+            android:id="@+id/btnMenu"
+            style="@style/MainMenuButton"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="開始" />
+            android:text="MENU"
+            tools:text="MENU" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBack"
@@ -31,35 +32,16 @@
             android:layout_height="40dp"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="戻る" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnInterrupt"
-            style="@style/MainButton"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:text="中断" />
+            android:text="待った" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEnd"
             style="@style/MainButton"
             android:layout_width="0dp"
             android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:text="@string/end_button_name"
             tools:text="@string/end_button_name" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMenu"
-            style="@style/MainMenuButton"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1.2"
-            android:text="MENU"
-            tools:text="MENU" />
 
     </LinearLayout>
 

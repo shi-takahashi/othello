@@ -180,7 +180,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="戻る"
+                            android:text="待った"
                             android:textColor="@color/setting_text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -189,7 +189,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="一手戻る機能を使う"
+                            android:text="待った機能を使う"
                             android:textColor="@color/setting_text_secondary"
                             android:textSize="12sp" />
 
@@ -199,7 +199,7 @@
                         android:id="@+id/switchReturnable"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true" />
+                        android:checked="false" />
 
                 </LinearLayout>
 

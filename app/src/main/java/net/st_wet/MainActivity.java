@@ -71,8 +71,10 @@ public class MainActivity extends AppCompatActivity
                         isNeedRestart = true;
                     }
 
-                    boolean isReturnalbe = data.getBooleanExtra("returnable", true);
-                    findViewById(R.id.btnBack).setEnabled(isReturnalbe);
+                    boolean isReturnalbe = data.getBooleanExtra("returnable", false);
+                    View btnBack = findViewById(R.id.btnBack);
+                    btnBack.setEnabled(isReturnalbe);
+                    btnBack.setAlpha(isReturnalbe ? 1.0f : 0.4f);
 
                     boolean isReset = data.getBooleanExtra("reset", false);
 
@@ -124,22 +126,10 @@ public class MainActivity extends AppCompatActivity
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
 
-        findViewById(R.id.btnRestart).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                restart();
-            }
-        });
         findViewById(R.id.btnBack).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 back();
-            }
-        });
-        findViewById(R.id.btnInterrupt).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                interrupt();
             }
         });
         findViewById(R.id.btnEnd).setOnClickListener(new View.OnClickListener() {
@@ -159,7 +149,11 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
                         int itemId = menuItem.getItemId();
-                        if (itemId == R.id.menu_help) {
+                        if (itemId == R.id.menu_restart) {
+                            restart();
+                        } else if (itemId == R.id.menu_interrupt) {
+                            interrupt();
+                        } else if (itemId == R.id.menu_help) {
                             showHelp();
                         } else if (itemId == R.id.menu_result) {
                             result();
@@ -273,7 +267,7 @@ public class MainActivity extends AppCompatActivity
         boolean bUseBack = pref.getBoolean("useBack", false);
         int level = pref.getInt("level", 2);
         boolean isFirst = pref.getBoolean("first", true);
-        boolean isReturnalbe = pref.getBoolean("returnable", true);
+        boolean isReturnalbe = pref.getBoolean("returnable", false);
 
         OthelloView othelloView = findViewById(R.id.othelloView);
 
@@ -295,7 +289,9 @@ public class MainActivity extends AppCompatActivity
             othelloView.setTurn(Cell.E_STATUS.White);
         }
 
-        findViewById(R.id.btnBack).setEnabled(isReturnalbe);
+        View btnBack = findViewById(R.id.btnBack);
+        btnBack.setEnabled(isReturnalbe);
+        btnBack.setAlpha(isReturnalbe ? 1.0f : 0.4f);
     }
 
     public boolean getFirst() {

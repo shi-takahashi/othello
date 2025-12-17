@@ -32,7 +32,7 @@ public class SettingActivity extends AppCompatActivity
 
         level = intent.getIntExtra("level", 0);
         isFirst = intent.getBooleanExtra("first", true);
-        isReturnalbe = intent.getBooleanExtra("returnable", true);
+        isReturnalbe = intent.getBooleanExtra("returnable", false);
         isReset = false;
 
         // Initialize views

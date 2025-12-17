@@ -3,8 +3,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
         android:id="@+id/menu_help"
-        android:enabled="true"
         android:title="ヘルプ" />
+    <item
+        android:id="@+id/menu_restart"
+        android:title="最初からやり直す" />
+    <item
+        android:id="@+id/menu_interrupt"
+        android:title="一時中断する" />
     <item
         android:id="@+id/menu_result"
         android:title="成績を確認する"/>
