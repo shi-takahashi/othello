@@ -22,6 +22,7 @@ import net.st_wet.model.Cell.E_STATUS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class OthelloView extends View
 {
@@ -470,8 +471,36 @@ public class OthelloView extends View
 
                 long start = System.currentTimeMillis();
 
-                int score = alphaBeta(mBoard, mDepth, UNDECIDED_SCORE);
-//                Log.d("search-alphaBeta", "score=" + score + ", mR=" + mR + ", mC=" + mC);
+                if (mDepth == 1) {
+                    // Lv.1: 一番多くひっくり返せる場所を選びがち（初心者っぽい戦略）
+                    ArrayList<HashMap> list = mBoard.getCanPutRCs(this.my_turn);
+                    if (list.size() > 0) {
+                        Random random = new Random();
+                        if (random.nextInt(100) < 70) {
+                            // 70%: 一番多く取れる場所を選ぶ
+                            int maxCount = -1;
+                            for (HashMap<String, Integer> map : list) {
+                                int r = map.get("r");
+                                int c = map.get("c");
+                                int count = mBoard.turnOverCells(this.my_turn, r, c, true).size();
+                                if (count > maxCount) {
+                                    maxCount = count;
+                                    mR = r;
+                                    mC = c;
+                                }
+                            }
+                        } else {
+                            // 30%: ランダムに選ぶ
+                            int index = random.nextInt(list.size());
+                            HashMap<String, Integer> map = list.get(index);
+                            mR = map.get("r");
+                            mC = map.get("c");
+                        }
+                    }
+                } else {
+                    // Lv.2以上: Alpha-Beta探索
+                    int score = alphaBeta(mBoard, mDepth, UNDECIDED_SCORE);
+                }
 
                 // 考えている感。。
                 while (true) {
