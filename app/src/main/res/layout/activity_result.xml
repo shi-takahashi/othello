@@ -33,13 +33,18 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="right|bottom"
-        android:orientation="horizontal">
+        android:gravity="end|bottom"
+        android:orientation="horizontal"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnReturn"
+            style="@style/MainMenuButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
             android:text="対局に戻る" />
     </LinearLayout>
 </LinearLayout>
