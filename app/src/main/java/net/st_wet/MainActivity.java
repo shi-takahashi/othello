@@ -342,43 +342,44 @@ public class MainActivity extends AppCompatActivity
         return ia;
     }
 
-    public void saveResult(int level, int point) {
-        String key = "";
+    public void saveResult(int level, int point, boolean usedBack) {
+        // 戻るボタンを使っていない場合のみローカルに保存
+        if (!usedBack) {
+            String key = "";
 
-        switch (level) {
-            case 1:
-                key = "resultOne";
-                break;
-            case 2:
-                key = "resultTwo";
-                break;
-            case 3:
-                key = "resultThree";
-                break;
-            default:
-                break;
+            switch (level) {
+                case 1:
+                    key = "resultOne";
+                    break;
+                case 2:
+                    key = "resultTwo";
+                    break;
+                case 3:
+                    key = "resultThree";
+                    break;
+                default:
+                    break;
+            }
+
+            if (key != "") {
+                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+                String result = pref.getString(key, null);
+
+                if (result == null) {
+                    result = String.valueOf(point);
+                } else {
+                    result = result + "," + String.valueOf(point);
+                }
+
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putString(key, result);
+                editor.commit();
+            }
         }
 
-        if (key == "") {
-            return;
-        }
-
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        String result = pref.getString(key, null);
-
-        if (result == null) {
-            result = String.valueOf(point);
-        } else {
-            result = result + "," + String.valueOf(point);
-        }
-
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putString(key, result);
-        editor.commit();
-
-        // Firebase Analytics にイベント送信
-        sendGameResultEvent(level, point);
+        // Firebase Analytics にイベント送信（戻る使用時も送信）
+        sendGameResultEvent(level, point, usedBack);
     }
 
     /**
@@ -394,9 +395,13 @@ public class MainActivity extends AppCompatActivity
      * 対戦結果を Firebase Analytics に送信
      * @param level レベル (1, 2, 3)
      * @param point 石差 (正: 勝ち, 負: 負け, 0: 引き分け)
+     * @param usedBack 戻るボタンを使用したか
      */
-    private void sendGameResultEvent(int level, int point) {
+    private void sendGameResultEvent(int level, int point, boolean usedBack) {
         String eventName = "game_result_lv" + level;
+        if (usedBack) {
+            eventName += "_matta";
+        }
 
         String resultValue;
         if (point > 0) {

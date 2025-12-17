@@ -260,16 +260,14 @@ public class OthelloView extends View
         int count_black = mBoard.getStatusCount(E_STATUS.Black);
         int count_white = mBoard.getStatusCount(E_STATUS.White);
 
-        if (mbUseBack == false) {
-            int level = (getDepth() + 1) / 2;
-            int point = 0;
-            if (mMyTurn == E_STATUS.Black) {
-                point = count_black - count_white;
-            } else {
-                point = count_white - count_black;
-            }
-            ((MainActivity) getContext()).saveResult(level, point);
+        int level = (getDepth() + 1) / 2;
+        int point = 0;
+        if (mMyTurn == E_STATUS.Black) {
+            point = count_black - count_white;
+        } else {
+            point = count_white - count_black;
         }
+        ((MainActivity) getContext()).saveResult(level, point, mbUseBack);
 
         String message = "";
         if (mMyTurn == E_STATUS.Black) {
