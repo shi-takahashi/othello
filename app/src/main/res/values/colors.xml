@@ -16,4 +16,13 @@
     <color name="setting_button_selected">#008577</color>
     <color name="setting_button_unselected">#F5F5F5</color>
     <color name="setting_danger">#D32F2F</color>
+
+    <!-- Main Screen Button Colors (Light Theme) -->
+    <color name="main_button_text">#424242</color>
+    <color name="main_button_stroke">#BDBDBD</color>
+    <color name="main_button_background">#FFFFFF</color>
+    <color name="main_menu_text">#FFFFFF</color>
+    <color name="main_menu_stroke">#008577</color>
+    <color name="main_menu_background">#008577</color>
+    <color name="main_button_bar">#EEEEEE</color>
 </resources>
