@@ -8,4 +8,45 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Light Theme for Settings -->
+    <style name="SettingTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/setting_accent</item>
+        <item name="colorPrimaryVariant">@color/setting_accent_variant</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSecondary">@color/setting_accent</item>
+        <item name="android:windowBackground">@color/setting_background</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+    </style>
+
+    <!-- Setting Card Style -->
+    <style name="SettingCard" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/setting_card</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="strokeColor">@color/setting_card_stroke</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <!-- Toggle Button Style -->
+    <style name="SettingToggleButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/setting_text_primary</item>
+        <item name="strokeColor">@color/setting_card_stroke</item>
+        <item name="backgroundTint">@color/setting_button_unselected</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <!-- Primary Button Style -->
+    <style name="SettingPrimaryButton" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/setting_accent</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <!-- Secondary Button Style -->
+    <style name="SettingSecondaryButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/setting_text_secondary</item>
+        <item name="strokeColor">@color/setting_card_stroke</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
 </resources>

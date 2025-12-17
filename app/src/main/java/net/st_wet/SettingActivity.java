@@ -1,20 +1,15 @@
 package net.st_wet;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 public class SettingActivity extends AppCompatActivity
 {
@@ -22,6 +17,11 @@ public class SettingActivity extends AppCompatActivity
     private boolean isFirst = true;
     private boolean isReturnalbe = true;
     private boolean isReset = false;
+
+    private MaterialButtonToggleGroup levelToggleGroup;
+    private MaterialButtonToggleGroup tebanToggleGroup;
+    private SwitchMaterial switchReturnable;
+    private SwitchMaterial switchReset;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,49 +35,57 @@ public class SettingActivity extends AppCompatActivity
         isReturnalbe = intent.getBooleanExtra("returnable", true);
         isReset = false;
 
+        // Initialize views
+        levelToggleGroup = findViewById(R.id.levelToggleGroup);
+        tebanToggleGroup = findViewById(R.id.tebanToggleGroup);
+        switchReturnable = findViewById(R.id.switchReturnable);
+        switchReset = findViewById(R.id.switchReset);
+
         loadLevel();
         loadTeban();
         loadReturnSetting();
-        ((CheckBox) findViewById(R.id.checkReset)).setChecked(false);
+        switchReset.setChecked(false);
 
-        ((RadioGroup)findViewById(R.id.level)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        // Level selection listener
+        levelToggleGroup.addOnButtonCheckedListener(new MaterialButtonToggleGroup.OnButtonCheckedListener() {
             @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if (i == R.id.level1) {
-                    level = 1;
-                } else if (i == R.id.level2) {
-                    level = 2;
-                } else if (i == R.id.level3) {
-                    level = 3;
+            public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked) {
+                if (isChecked) {
+                    if (checkedId == R.id.level1) {
+                        level = 1;
+                    } else if (checkedId == R.id.level2) {
+                        level = 2;
+                    } else if (checkedId == R.id.level3) {
+                        level = 3;
+                    }
                 }
             }
         });
 
-        ((RadioGroup)findViewById(R.id.teban)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        // Turn selection listener
+        tebanToggleGroup.addOnButtonCheckedListener(new MaterialButtonToggleGroup.OnButtonCheckedListener() {
             @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if (i == R.id.black) {
-                    isFirst = true;
-                } else if (i == R.id.white) {
-                    isFirst = false;
+            public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked) {
+                if (isChecked) {
+                    if (checkedId == R.id.black) {
+                        isFirst = true;
+                    } else if (checkedId == R.id.white) {
+                        isFirst = false;
+                    }
                 }
             }
         });
 
-        findViewById(R.id.checkReturnable).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isReturnalbe = ((CheckBox)view).isChecked();
-            }
+        // Switch listeners
+        switchReturnable.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isReturnalbe = isChecked;
         });
 
-        findViewById(R.id.checkReset).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isReset = ((CheckBox)view).isChecked();
-            }
+        switchReset.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isReset = isChecked;
         });
 
+        // Button listeners
         findViewById(R.id.btnOk).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,39 +109,33 @@ public class SettingActivity extends AppCompatActivity
     }
 
     private void loadLevel() {
-        RadioButton radioButton = null;
+        int buttonId = R.id.level1;
         switch (level) {
             case 1:
-                radioButton = (RadioButton)findViewById(R.id.level1);
+                buttonId = R.id.level1;
                 break;
             case 2:
-                radioButton = (RadioButton)findViewById(R.id.level2);
+                buttonId = R.id.level2;
                 break;
             case 3:
-                radioButton = (RadioButton)findViewById(R.id.level3);
+                buttonId = R.id.level3;
                 break;
             default:
+                buttonId = R.id.level1;
                 break;
         }
-        if (radioButton != null) {
-            radioButton.setChecked(true);
-        }
+        levelToggleGroup.check(buttonId);
     }
 
     private void loadTeban() {
-        RadioButton radioButton = null;
-        if (isFirst == true) {
-            radioButton = (RadioButton) findViewById(R.id.black);
+        if (isFirst) {
+            tebanToggleGroup.check(R.id.black);
         } else {
-            radioButton = (RadioButton) findViewById(R.id.white);
-        }
-        if (radioButton != null) {
-            radioButton.setChecked(true);
+            tebanToggleGroup.check(R.id.white);
         }
     }
 
     private void loadReturnSetting() {
-        CheckBox checkBox = (CheckBox) findViewById(R.id.checkReturnable);
-        checkBox.setChecked(isReturnalbe);
+        switchReturnable.setChecked(isReturnalbe);
     }
 }
