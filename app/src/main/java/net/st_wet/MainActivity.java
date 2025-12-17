@@ -18,6 +18,7 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import net.st_wet.model.Cell;
 
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_CODE = 1;
 
     private AdView mAdView;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -107,6 +109,10 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Firebase Analytics 初期化
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
             public void onInitializationComplete(InitializationStatus initializationStatus) {
@@ -365,5 +371,32 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = pref.edit();
         editor.putString(key, result);
         editor.commit();
+
+        // Firebase Analytics にイベント送信
+        sendGameResultEvent(level, point);
+    }
+
+    /**
+     * 対戦結果を Firebase Analytics に送信
+     * @param level レベル (1, 2, 3)
+     * @param point 石差 (正: 勝ち, 負: 負け, 0: 引き分け)
+     */
+    private void sendGameResultEvent(int level, int point) {
+        String eventName = "game_result_lv" + level;
+
+        String resultValue;
+        if (point > 0) {
+            resultValue = "win";
+        } else if (point < 0) {
+            resultValue = "lose";
+        } else {
+            resultValue = "draw";
+        }
+
+        Bundle params = new Bundle();
+        params.putString("result", resultValue);
+        params.putString("score_diff", String.valueOf(point));
+
+        mFirebaseAnalytics.logEvent(eventName, params);
     }
 }
