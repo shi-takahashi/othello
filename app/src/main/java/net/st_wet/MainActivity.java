@@ -25,6 +25,8 @@ import net.st_wet.model.Cell;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.widget.TextView;
+
 public class MainActivity extends AppCompatActivity
 {
     private static final int REQUEST_CODE = 1;
@@ -284,6 +286,9 @@ public class MainActivity extends AppCompatActivity
         int depth = level * 2 - 1;
         othelloView.setDepth(depth);
 
+        // レベル表示を更新
+        updateLevelDisplay(level);
+
         if (isFirst) {
             othelloView.setTurn(Cell.E_STATUS.Black);
         } else {
@@ -374,6 +379,15 @@ public class MainActivity extends AppCompatActivity
 
         // Firebase Analytics にイベント送信
         sendGameResultEvent(level, point);
+    }
+
+    /**
+     * レベル表示を更新
+     * @param level レベル (1, 2, 3)
+     */
+    private void updateLevelDisplay(int level) {
+        TextView txtLevel = findViewById(R.id.txtLevel);
+        txtLevel.setText("Lv." + level);
     }
 
     /**
