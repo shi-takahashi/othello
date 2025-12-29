@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioAttributes;
+import android.media.SoundPool;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -38,6 +40,9 @@ public class OthelloView extends View
     private boolean mbUseBack = false;  // 戻るボタンを使用して実際に戻ったかどうか
     private boolean mShowLastMove = true;  // 直前の手を表示するかどうか
     private Cpu mCpu = null;
+    private SoundPool mSoundPool;
+    private int mSoundIdPut;
+    private boolean mSoundEnabled = true;
 
     public OthelloView(Context context, AttributeSet atr) {
         super(context, atr);
@@ -48,6 +53,17 @@ public class OthelloView extends View
 
         mCpu = new Cpu(E_STATUS.None);
         mCpu.start();
+
+        // サウンド初期化
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        mSoundPool = new SoundPool.Builder()
+                .setMaxStreams(2)
+                .setAudioAttributes(audioAttributes)
+                .build();
+        mSoundIdPut = mSoundPool.load(context, R.raw.stone_put, 1);
     }
 
     @Override
@@ -206,6 +222,11 @@ public class OthelloView extends View
     }
 
     public void putStone() {
+        // 石を置く音を再生
+        if (mSoundEnabled) {
+            mSoundPool.play(mSoundIdPut, 1.0f, 1.0f, 0, 0, 1.0f);
+        }
+
         mBoard.changeCell(mR, mC);
 
         mHistory += String.valueOf(mBoard.getTurn().ordinal());
@@ -369,6 +390,10 @@ public class OthelloView extends View
 
     public void setShowLastMove(boolean showLastMove) {
         this.mShowLastMove = showLastMove;
+    }
+
+    public void setSoundEnabled(boolean soundEnabled) {
+        this.mSoundEnabled = soundEnabled;
     }
 
     public void back() {

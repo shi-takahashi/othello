@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity
                     boolean isShowLastMove = data.getBooleanExtra("showLastMove", true);
                     othelloView.setShowLastMove(isShowLastMove);
 
+                    boolean isSoundEnabled = data.getBooleanExtra("soundEnabled", true);
+                    othelloView.setSoundEnabled(isSoundEnabled);
+
                     boolean isReset = data.getBooleanExtra("reset", false);
 
                     // この後onResume()が走って復元されてしまうのでここで保存しておく
@@ -91,6 +94,7 @@ public class MainActivity extends AppCompatActivity
                     editor.putBoolean("first", isFirst);
                     editor.putBoolean("returnable", isReturnalbe);
                     editor.putBoolean("showLastMove", isShowLastMove);
+                    editor.putBoolean("soundEnabled", isSoundEnabled);
                     if (isReset == true) {
                         editor.remove("resultOne");
                         editor.remove("resultTwo");
@@ -268,6 +272,9 @@ public class MainActivity extends AppCompatActivity
         boolean isShowLastMove = pref.getBoolean("showLastMove", true);
         intent.putExtra("showLastMove", isShowLastMove);
 
+        boolean isSoundEnabled = pref.getBoolean("soundEnabled", true);
+        intent.putExtra("soundEnabled", isSoundEnabled);
+
         startActivityForResult(intent, REQUEST_CODE);
     }
 
@@ -335,6 +342,7 @@ public class MainActivity extends AppCompatActivity
         boolean isFirst = pref.getBoolean("first", true);
         boolean isReturnalbe = pref.getBoolean("returnable", false);
         boolean isShowLastMove = pref.getBoolean("showLastMove", true);
+        boolean isSoundEnabled = pref.getBoolean("soundEnabled", true);
 
         OthelloView othelloView = findViewById(R.id.othelloView);
 
@@ -360,6 +368,7 @@ public class MainActivity extends AppCompatActivity
         btnBack.setVisibility(isReturnalbe ? View.VISIBLE : View.GONE);
 
         othelloView.setShowLastMove(isShowLastMove);
+        othelloView.setSoundEnabled(isSoundEnabled);
     }
 
     public boolean getFirst() {

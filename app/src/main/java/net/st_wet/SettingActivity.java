@@ -17,12 +17,14 @@ public class SettingActivity extends AppCompatActivity
     private boolean isFirst = true;
     private boolean isReturnalbe = true;
     private boolean isShowLastMove = true;
+    private boolean isSoundEnabled = true;
     private boolean isReset = false;
 
     private MaterialButtonToggleGroup levelToggleGroup;
     private MaterialButtonToggleGroup tebanToggleGroup;
     private SwitchMaterial switchReturnable;
     private SwitchMaterial switchShowLastMove;
+    private SwitchMaterial switchSound;
     private SwitchMaterial switchReset;
 
     @Override
@@ -36,6 +38,7 @@ public class SettingActivity extends AppCompatActivity
         isFirst = intent.getBooleanExtra("first", true);
         isReturnalbe = intent.getBooleanExtra("returnable", false);
         isShowLastMove = intent.getBooleanExtra("showLastMove", true);
+        isSoundEnabled = intent.getBooleanExtra("soundEnabled", true);
         isReset = false;
 
         // Initialize views
@@ -43,12 +46,14 @@ public class SettingActivity extends AppCompatActivity
         tebanToggleGroup = findViewById(R.id.tebanToggleGroup);
         switchReturnable = findViewById(R.id.switchReturnable);
         switchShowLastMove = findViewById(R.id.switchShowLastMove);
+        switchSound = findViewById(R.id.switchSound);
         switchReset = findViewById(R.id.switchReset);
 
         loadLevel();
         loadTeban();
         loadReturnSetting();
         switchShowLastMove.setChecked(isShowLastMove);
+        switchSound.setChecked(isSoundEnabled);
         switchReset.setChecked(false);
 
         // Level selection listener
@@ -90,6 +95,10 @@ public class SettingActivity extends AppCompatActivity
             isShowLastMove = isChecked;
         });
 
+        switchSound.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isSoundEnabled = isChecked;
+        });
+
         switchReset.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isReset = isChecked;
         });
@@ -103,6 +112,7 @@ public class SettingActivity extends AppCompatActivity
                 intent.putExtra("first", isFirst);
                 intent.putExtra("returnable", isReturnalbe);
                 intent.putExtra("showLastMove", isShowLastMove);
+                intent.putExtra("soundEnabled", isSoundEnabled);
                 intent.putExtra("reset", isReset);
                 setResult(RESULT_OK, intent);
                 finish();
