@@ -461,8 +461,6 @@ public class MainActivity extends AppCompatActivity
 
         OthelloView othelloView = findViewById(R.id.othelloView);
 
-        othelloView.setUseBack(bUseBack);
-
         int depth = level * 2 - 1;
         othelloView.setDepth(depth);
 
@@ -486,6 +484,7 @@ public class MainActivity extends AppCompatActivity
             mNeedsRestore = false;
             if (history != null) {
                 // 保存されたゲームがある場合は復元
+                othelloView.setUseBack(bUseBack);
                 othelloView.restore(currentTurn, cellsStatus, history);
                 // 復元後は保存状態をクリア（次回スワイプアップ時に復元されないように）
                 SharedPreferences.Editor editor = pref.edit();
