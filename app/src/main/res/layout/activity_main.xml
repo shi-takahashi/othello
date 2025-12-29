@@ -1,81 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/main_button_bar"
-        android:orientation="horizontal"
-        android:padding="6dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMenu"
-            style="@style/MainMenuButton"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:text="MENU"
-            tools:text="MENU" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/main_button_bar"
+            android:orientation="horizontal"
+            android:padding="6dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBack"
-            style="@style/MainButton"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:text="待った" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMenu"
+                style="@style/MainMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="MENU"
+                tools:text="MENU" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEnd"
-            style="@style/MainButton"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:text="@string/end_button_name"
-            tools:text="@string/end_button_name" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLevelChange"
+                style="@style/MainButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="Lv変更" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEnd"
+                style="@style/MainButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="@string/end_button_name"
+                tools:text="@string/end_button_name" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtLevel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:text="Lv.1" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+            <net.st_wet.OthelloView
+                android:id="@+id/othelloView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                tools:ignore="MissingConstraints" />
+
+            <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/adView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                ads:adSize="BANNER"
+                ads:adUnitId="ca-app-pub-4630894580841955/9956399071"></com.google.android.gms.ads.AdView>
+
+        </RelativeLayout>
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/txtLevel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingVertical="8dp"
-        android:textSize="18sp"
-        android:textColor="@android:color/black"
-        android:gravity="center"
-        android:text="Lv.1" />
-
-    <RelativeLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBack"
+        style="@style/MainButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="80dp"
+        android:paddingHorizontal="16dp"
+        android:text="待った" />
 
-        <net.st_wet.OthelloView
-            android:id="@+id/othelloView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            tools:ignore="MissingConstraints" />
-
-        <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/adView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            ads:adSize="BANNER"
-            ads:adUnitId="ca-app-pub-4630894580841955/9956399071"></com.google.android.gms.ads.AdView>
-
-    </RelativeLayout>
-
-</LinearLayout>
+</FrameLayout>

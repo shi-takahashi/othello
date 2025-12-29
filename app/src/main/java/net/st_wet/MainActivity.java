@@ -77,8 +77,7 @@ public class MainActivity extends AppCompatActivity
 
                     boolean isReturnalbe = data.getBooleanExtra("returnable", false);
                     View btnBack = findViewById(R.id.btnBack);
-                    btnBack.setEnabled(isReturnalbe);
-                    btnBack.setAlpha(isReturnalbe ? 1.0f : 0.4f);
+                    btnBack.setVisibility(isReturnalbe ? View.VISIBLE : View.GONE);
 
                     boolean isReset = data.getBooleanExtra("reset", false);
 
@@ -140,6 +139,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 end();
+            }
+        });
+        findViewById(R.id.btnLevelChange).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setting();
             }
         });
         findViewById(R.id.btnMenu).setOnClickListener(new View.OnClickListener() {
@@ -252,7 +257,8 @@ public class MainActivity extends AppCompatActivity
         boolean isFirst = othelloView.getFirst();
         intent.putExtra("first", isFirst);
 
-        boolean isReturnable = findViewById(R.id.btnBack).isEnabled();
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean isReturnable = pref.getBoolean("returnable", false);
         intent.putExtra("returnable", isReturnable);
 
 
@@ -304,7 +310,7 @@ public class MainActivity extends AppCompatActivity
         boolean isUseBack = othelloView.getUseBack();
         editor.putBoolean("useBack", isUseBack);
 
-        boolean isReturnalbe = findViewById(R.id.btnBack).isEnabled();
+        boolean isReturnalbe = findViewById(R.id.btnBack).getVisibility() == View.VISIBLE;
         editor.putBoolean("returnable", isReturnalbe);
 
         editor.commit();
@@ -344,8 +350,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         View btnBack = findViewById(R.id.btnBack);
-        btnBack.setEnabled(isReturnalbe);
-        btnBack.setAlpha(isReturnalbe ? 1.0f : 0.4f);
+        btnBack.setVisibility(isReturnalbe ? View.VISIBLE : View.GONE);
     }
 
     public boolean getFirst() {
