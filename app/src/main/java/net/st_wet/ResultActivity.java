@@ -128,7 +128,8 @@ public class ResultActivity extends AppCompatActivity {
         // X軸
         XAxis xAxis = mChart.getXAxis();
         xAxis.setEnabled(true);
-        xAxis.setLabelCount(5);
+        xAxis.setGranularity(1f);  // 整数刻みで表示
+        xAxis.setGranularityEnabled(true);
         xAxis.enableGridDashedLine(10f, 10f, 0f);
         xAxis.setAxisMinimum(10f);
         xAxis.setAxisMaximum(maxDataLength);
@@ -141,7 +142,8 @@ public class ResultActivity extends AppCompatActivity {
 
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setEnabled(true);
-        leftAxis.setLabelCount(5);
+        leftAxis.setGranularity(1f);  // 整数刻みで表示
+        leftAxis.setGranularityEnabled(true);
         leftAxis.enableGridDashedLine(10f, 10f, 0f);
         leftAxis.setAxisMinimum(globalMin);
         leftAxis.setAxisMaximum(globalMax);
@@ -236,6 +238,6 @@ public class ResultActivity extends AppCompatActivity {
         dataSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
         dataSet.setFormSize(14.f);
 
-        return new ChartDataResult(dataSet, min, max, values.size());
+        return new ChartDataResult(dataSet, min, max, _data.length);
     }
 }
