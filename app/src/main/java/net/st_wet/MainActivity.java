@@ -116,9 +116,14 @@ public class MainActivity extends AppCompatActivity
                     editor.putBoolean("showLastMove", isShowLastMove);
                     editor.putBoolean("soundEnabled", isSoundEnabled);
                     if (isReset == true) {
+                        // 通常モードの成績
                         editor.remove("resultOne");
                         editor.remove("resultTwo");
                         editor.remove("resultThree");
+                        // ランダムモードの成績
+                        editor.remove("resultRandomOne");
+                        editor.remove("resultRandomTwo");
+                        editor.remove("resultRandomThree");
                     }
                     if (isNeedRestart == true) {
                         editor.remove("currentTurn");
