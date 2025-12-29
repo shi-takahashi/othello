@@ -8,34 +8,56 @@
     android:fitsSystemWindows="true"
     tools:context=".ResultActivity">
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/line_chart1"
+    <!-- 成績テキスト表示エリア -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
-        />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/line_chart2"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
-        />
+        <TextView
+            android:id="@+id/textLv1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:text="Lv.1  0勝0敗　0点"
+            android:paddingBottom="4dp" />
 
+        <TextView
+            android:id="@+id/textLv2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#0000FF"
+            android:text="Lv.2  0勝0敗　0点"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:id="@+id/textLv3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#FF0000"
+            android:text="Lv.3  0勝0敗　0点"
+            android:paddingBottom="4dp" />
+    </LinearLayout>
+
+    <!-- 統合グラフ -->
     <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/line_chart3"
+        android:id="@+id/line_chart"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="1"
         />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="end|bottom"
+        android:layout_height="wrap_content"
+        android:gravity="end"
         android:orientation="horizontal"
         android:paddingEnd="16dp"
+        android:paddingTop="8dp"
         android:paddingBottom="12dp">
 
         <com.google.android.material.button.MaterialButton

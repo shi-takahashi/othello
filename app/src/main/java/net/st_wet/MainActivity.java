@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -160,6 +161,12 @@ public class MainActivity extends AppCompatActivity
                     // リフレクション失敗時は無視
                 }
 
+                // リリースビルドではDEBUGメニューを非表示
+                boolean isDebuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+                if (!isDebuggable) {
+                    popup.getMenu().removeItem(R.id.menu_result_test);
+                }
+
                 popup.show();
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -176,6 +183,8 @@ public class MainActivity extends AppCompatActivity
                             setting();
                         } else if (itemId == R.id.menu_end) {
                             end();
+                        } else if (itemId == R.id.menu_result_test) {
+                            resultTest();
                         }
                         return false;
                     }
@@ -200,6 +209,36 @@ public class MainActivity extends AppCompatActivity
         intent.putExtra("level2", loadResult(2));
         intent.putExtra("level3", loadResult(3));
         startActivity(intent);
+    }
+
+    /**
+     * [DEBUG] テストデータで成績画面を表示
+     * 試行回数が多い場合のグラフ表示を確認するため
+     */
+    public void resultTest() {
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+        intent.putExtra("level1", generateTestData(150));  // 150回分
+        intent.putExtra("level2", generateTestData(80));   // 80回分
+        intent.putExtra("level3", generateTestData(200));  // 200回分
+        startActivity(intent);
+    }
+
+    /**
+     * テスト用のダミーデータを生成
+     * @param count データ数
+     * @return ダミーの成績データ（勝ち/負けがランダム）
+     */
+    private int[] generateTestData(int count) {
+        java.util.Random random = new java.util.Random();
+        int[] data = new int[count];
+        for (int i = 0; i < count; i++) {
+            // -64 〜 +64 の範囲でランダムな点数（0は引き分け）
+            int point = random.nextInt(129) - 64;
+            // 勝ちが少し多めになるよう調整
+            if (point < -30) point += 20;
+            data[i] = point;
+        }
+        return data;
     }
 
     public void setting() {
