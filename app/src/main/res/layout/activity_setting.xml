@@ -159,6 +159,7 @@
 
             <!-- Handicap Card -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/handicapCard"
                 style="@style/SettingCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -309,6 +310,63 @@
                         android:text="※ハンディキャップ使用時は成績に記録されません"
                         android:textColor="@color/setting_text_secondary"
                         android:textSize="11sp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Random Mode Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/randomModeCard"
+                style="@style/SettingCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ランダムモード"
+                            android:textColor="@color/setting_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="ランダムな配置から開始"
+                            android:textColor="@color/setting_text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="※ランダムモード使用時は成績に記録されません"
+                            android:textColor="@color/setting_text_secondary"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchRandomMode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false" />
 
                 </LinearLayout>
 

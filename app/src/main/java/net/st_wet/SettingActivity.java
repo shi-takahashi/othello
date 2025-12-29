@@ -17,6 +17,7 @@ public class SettingActivity extends AppCompatActivity
     private boolean isFirst = true;
     private int handicapTarget = 0;  // 0=なし, 1=自分, 2=相手
     private int handicapCount = 1;   // 1〜4
+    private boolean isRandomMode = false;
     private boolean isReturnalbe = true;
     private boolean isShowLastMove = true;
     private boolean isSoundEnabled = true;
@@ -27,6 +28,8 @@ public class SettingActivity extends AppCompatActivity
     private MaterialButtonToggleGroup handicapTargetToggleGroup;
     private MaterialButtonToggleGroup handicapCountToggleGroup;
     private View handicapCountContainer;
+    private View handicapCard;
+    private SwitchMaterial switchRandomMode;
     private SwitchMaterial switchReturnable;
     private SwitchMaterial switchShowLastMove;
     private SwitchMaterial switchSound;
@@ -43,6 +46,7 @@ public class SettingActivity extends AppCompatActivity
         isFirst = intent.getBooleanExtra("first", true);
         handicapTarget = intent.getIntExtra("handicapTarget", 0);
         handicapCount = intent.getIntExtra("handicapCount", 1);
+        isRandomMode = intent.getBooleanExtra("randomMode", false);
         isReturnalbe = intent.getBooleanExtra("returnable", false);
         isShowLastMove = intent.getBooleanExtra("showLastMove", true);
         isSoundEnabled = intent.getBooleanExtra("soundEnabled", true);
@@ -54,6 +58,8 @@ public class SettingActivity extends AppCompatActivity
         handicapTargetToggleGroup = findViewById(R.id.handicapTargetToggleGroup);
         handicapCountToggleGroup = findViewById(R.id.handicapCountToggleGroup);
         handicapCountContainer = findViewById(R.id.handicapCountContainer);
+        handicapCard = findViewById(R.id.handicapCard);
+        switchRandomMode = findViewById(R.id.switchRandomMode);
         switchReturnable = findViewById(R.id.switchReturnable);
         switchShowLastMove = findViewById(R.id.switchShowLastMove);
         switchSound = findViewById(R.id.switchSound);
@@ -62,6 +68,7 @@ public class SettingActivity extends AppCompatActivity
         loadLevel();
         loadTeban();
         loadHandicap();
+        loadRandomMode();
         loadReturnSetting();
         switchShowLastMove.setChecked(isShowLastMove);
         switchSound.setChecked(isSoundEnabled);
@@ -108,9 +115,15 @@ public class SettingActivity extends AppCompatActivity
                     } else if (checkedId == R.id.handicapPlayer) {
                         handicapTarget = 1;
                         handicapCountContainer.setVisibility(View.VISIBLE);
+                        // ハンデを選択したらランダムモードをOFFに
+                        isRandomMode = false;
+                        switchRandomMode.setChecked(false);
                     } else if (checkedId == R.id.handicapCpu) {
                         handicapTarget = 2;
                         handicapCountContainer.setVisibility(View.VISIBLE);
+                        // ハンデを選択したらランダムモードをOFFに
+                        isRandomMode = false;
+                        switchRandomMode.setChecked(false);
                     }
                 }
             }
@@ -135,6 +148,16 @@ public class SettingActivity extends AppCompatActivity
         });
 
         // Switch listeners
+        switchRandomMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isRandomMode = isChecked;
+            if (isChecked) {
+                // ランダムモードをONにしたらハンディキャップをなしに
+                handicapTarget = 0;
+                handicapTargetToggleGroup.check(R.id.handicapNone);
+                handicapCountContainer.setVisibility(View.GONE);
+            }
+        });
+
         switchReturnable.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isReturnalbe = isChecked;
         });
@@ -160,6 +183,7 @@ public class SettingActivity extends AppCompatActivity
                 intent.putExtra("first", isFirst);
                 intent.putExtra("handicapTarget", handicapTarget);
                 intent.putExtra("handicapCount", handicapCount);
+                intent.putExtra("randomMode", isRandomMode);
                 intent.putExtra("returnable", isReturnalbe);
                 intent.putExtra("showLastMove", isShowLastMove);
                 intent.putExtra("soundEnabled", isSoundEnabled);
@@ -207,6 +231,10 @@ public class SettingActivity extends AppCompatActivity
 
     private void loadReturnSetting() {
         switchReturnable.setChecked(isReturnalbe);
+    }
+
+    private void loadRandomMode() {
+        switchRandomMode.setChecked(isRandomMode);
     }
 
     private void loadHandicap() {

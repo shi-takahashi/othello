@@ -98,6 +98,25 @@ public class Board implements Cloneable
         init(handicapTarget, handicapCount);
     }
 
+    /**
+     * 盤面を空にする（石を一切置かない状態）
+     */
+    public void resetEmpty() {
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                cells[r][c].setStatus(E_STATUS.None);
+            }
+        }
+        this.turn = E_STATUS.Black;
+    }
+
+    /**
+     * 指定位置に石を配置
+     */
+    public void setCell(int r, int c, E_STATUS status) {
+        cells[r][c].setStatus(status);
+    }
+
     public void init() {
         init(0, 1);
     }

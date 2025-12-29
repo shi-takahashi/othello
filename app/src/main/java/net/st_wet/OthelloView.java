@@ -45,6 +45,7 @@ public class OthelloView extends View
     private boolean mSoundEnabled = true;
     private int mHandicapTarget = 0;  // 0=なし, 1=自分, 2=相手
     private int mHandicapCount = 1;   // 1〜4
+    private boolean mRandomMode = false;  // ランダムモード
 
     public OthelloView(Context context, AttributeSet atr) {
         super(context, atr);
@@ -294,16 +295,156 @@ public class OthelloView extends View
     }
 
     public void restart() {
-        int actualHandicapTarget = mHandicapTarget;
-        // プレイヤーが白の場合、ハンディキャップの対象を入れ替える
-        // （Board.init()では1=黒、2=白として処理されるため）
-        if (mHandicapTarget != 0 && mMyTurn == E_STATUS.White) {
-            actualHandicapTarget = (mHandicapTarget == 1) ? 2 : 1;
+        if (mRandomMode) {
+            // ランダムモード：ランダムな配置で開始
+            setupRandomBoard();
+        } else {
+            // 通常モード
+            int actualHandicapTarget = mHandicapTarget;
+            // プレイヤーが白の場合、ハンディキャップの対象を入れ替える
+            // （Board.init()では1=黒、2=白として処理されるため）
+            if (mHandicapTarget != 0 && mMyTurn == E_STATUS.White) {
+                actualHandicapTarget = (mHandicapTarget == 1) ? 2 : 1;
+            }
+            mBoard.reset(actualHandicapTarget, mHandicapCount);
         }
-        mBoard.reset(actualHandicapTarget, mHandicapCount);
         mHistory = "";
         mbUseBack = false;
         invalidate();
+    }
+
+    /**
+     * ランダムな初期配置を生成する
+     * 通常の初期配置（中央4マス）に加えて、ランダムに石を追加配置する
+     */
+    private void setupRandomBoard() {
+        Random random = new Random();
+        final int MAX_ATTEMPTS = 10;  // 最大試行回数
+        final int FAIR_THRESHOLD = 500;  // 公平とみなすスコア閾値
+        final int MIN_PLAYER_MOVES = 2;  // プレイヤーの最低着手可能数
+
+        int bestScore = Integer.MAX_VALUE;
+        Cell[][] bestCells = null;
+
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            // 通常の初期配置でリセット（中央4マス）
+            mBoard.reset();
+
+            // 追加で配置する石の数（6〜16個）
+            int additionalStones = random.nextInt(11) + 6;
+
+            // 黒と白を均等に追加
+            int blackCount = additionalStones / 2;
+            int whiteCount = additionalStones - blackCount;
+
+            // 中央4マスは使用済みとしてマーク
+            ArrayList<int[]> usedPositions = new ArrayList<>();
+            usedPositions.add(new int[]{3, 3});
+            usedPositions.add(new int[]{3, 4});
+            usedPositions.add(new int[]{4, 3});
+            usedPositions.add(new int[]{4, 4});
+
+            // 黒を追加配置
+            for (int i = 0; i < blackCount; i++) {
+                int[] pos = getRandomEmptyPosition(random, usedPositions);
+                if (pos != null) {
+                    mBoard.setCell(pos[0], pos[1], E_STATUS.Black);
+                    usedPositions.add(pos);
+                }
+            }
+
+            // 白を追加配置
+            for (int i = 0; i < whiteCount; i++) {
+                int[] pos = getRandomEmptyPosition(random, usedPositions);
+                if (pos != null) {
+                    mBoard.setCell(pos[0], pos[1], E_STATUS.White);
+                    usedPositions.add(pos);
+                }
+            }
+
+            // プレイヤーが複数箇所に打てる状態か確認
+            int playerMoves = mBoard.getCanPutRCs(mMyTurn).size();
+
+            if (playerMoves < MIN_PLAYER_MOVES) {
+                // プレイヤーの選択肢が少ない場合は再試行
+                continue;
+            }
+
+            // 局面評価（黒視点のスコア）
+            int score = mCpu.evaluatePosition(mBoard, E_STATUS.Black);
+            int absScore = Math.abs(score);
+
+            // より公平な局面を記録
+            if (absScore < bestScore) {
+                bestScore = absScore;
+                bestCells = copyCells(mBoard.getCells());
+            }
+
+            // 十分公平なら終了
+            if (absScore < FAIR_THRESHOLD) {
+                break;
+            }
+        }
+
+        // 最も公平だった局面を適用
+        if (bestCells != null) {
+            applyCells(bestCells);
+        }
+
+        // 通常通り黒から開始
+        mBoard.setTurn(E_STATUS.Black);
+
+        mBoard.countCell();
+    }
+
+    /**
+     * ランダムな空きマスを取得
+     */
+    private int[] getRandomEmptyPosition(Random random, ArrayList<int[]> usedPositions) {
+        int maxAttempts = 100;
+        for (int i = 0; i < maxAttempts; i++) {
+            int r = random.nextInt(Board.ROWS);
+            int c = random.nextInt(Board.COLS);
+
+            boolean used = false;
+            for (int[] pos : usedPositions) {
+                if (pos[0] == r && pos[1] == c) {
+                    used = true;
+                    break;
+                }
+            }
+
+            if (!used) {
+                return new int[]{r, c};
+            }
+        }
+        return null;
+    }
+
+    /**
+     * セルの状態をコピー
+     */
+    private Cell[][] copyCells(Cell[][] cells) {
+        Cell[][] copy = new Cell[Board.ROWS][Board.COLS];
+        for (int r = 0; r < Board.ROWS; r++) {
+            for (int c = 0; c < Board.COLS; c++) {
+                copy[r][c] = new Cell();
+                copy[r][c].setStatus(cells[r][c].getStatus());
+            }
+        }
+        return copy;
+    }
+
+    /**
+     * コピーしたセルの状態を適用
+     */
+    private void applyCells(Cell[][] savedCells) {
+        Cell[][] cells = mBoard.getCells();
+        for (int r = 0; r < Board.ROWS; r++) {
+            for (int c = 0; c < Board.COLS; c++) {
+                cells[r][c].setStatus(savedCells[r][c].getStatus());
+            }
+        }
     }
 
     public void gameSet() {
@@ -321,8 +462,8 @@ public class OthelloView extends View
         } else {
             point = count_white - count_black;
         }
-        // 待ったを使った場合、またはハンデを使った場合は成績に含めない
-        boolean excludeFromStats = mbUseBack || isHandicapEnabled();
+        // 待ったを使った場合、ハンデを使った場合、ランダムモードの場合は成績に含めない
+        boolean excludeFromStats = mbUseBack || isHandicapEnabled() || mRandomMode;
         ((MainActivity) getContext()).saveResult(level, point, excludeFromStats);
 
         String message = "";
@@ -425,6 +566,14 @@ public class OthelloView extends View
 
     public boolean isHandicapEnabled() {
         return this.mHandicapTarget != 0;
+    }
+
+    public boolean isRandomMode() {
+        return this.mRandomMode;
+    }
+
+    public void setRandomMode(boolean randomMode) {
+        this.mRandomMode = randomMode;
     }
 
     public void back() {
@@ -546,6 +695,14 @@ public class OthelloView extends View
         }
         public E_STATUS getTurn() {
             return this.my_turn;
+        }
+
+        /**
+         * 局面評価（公開メソッド）
+         * ランダムモードの公平性チェック用
+         */
+        public int evaluatePosition(Board board, E_STATUS turn) {
+            return evalPositionLv3(board, turn);
         }
 
         @Override

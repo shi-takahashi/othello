@@ -85,6 +85,13 @@ public class MainActivity extends AppCompatActivity
                         isNeedRestart = true;
                     }
 
+                    boolean isRandomMode = data.getBooleanExtra("randomMode", false);
+                    if (othelloView.isRandomMode() != isRandomMode) {
+                        othelloView.setRandomMode(isRandomMode);
+                        // 要リスタート
+                        isNeedRestart = true;
+                    }
+
                     boolean isReturnalbe = data.getBooleanExtra("returnable", false);
                     View btnBack = findViewById(R.id.btnBack);
                     btnBack.setVisibility(isReturnalbe ? View.VISIBLE : View.GONE);
@@ -104,6 +111,7 @@ public class MainActivity extends AppCompatActivity
                     editor.putBoolean("first", isFirst);
                     editor.putInt("handicapTarget", handicapTarget);
                     editor.putInt("handicapCount", handicapCount);
+                    editor.putBoolean("randomMode", isRandomMode);
                     editor.putBoolean("returnable", isReturnalbe);
                     editor.putBoolean("showLastMove", isShowLastMove);
                     editor.putBoolean("soundEnabled", isSoundEnabled);
@@ -313,6 +321,9 @@ public class MainActivity extends AppCompatActivity
         int handicapCount = pref.getInt("handicapCount", 1);
         intent.putExtra("handicapCount", handicapCount);
 
+        boolean isRandomMode = pref.getBoolean("randomMode", false);
+        intent.putExtra("randomMode", isRandomMode);
+
         boolean isShowLastMove = pref.getBoolean("showLastMove", true);
         intent.putExtra("showLastMove", isShowLastMove);
 
@@ -409,6 +420,7 @@ public class MainActivity extends AppCompatActivity
         boolean isFirst = pref.getBoolean("first", true);
         int handicapTarget = pref.getInt("handicapTarget", 0);
         int handicapCount = pref.getInt("handicapCount", 1);
+        boolean isRandomMode = pref.getBoolean("randomMode", false);
         boolean isReturnalbe = pref.getBoolean("returnable", false);
         boolean isShowLastMove = pref.getBoolean("showLastMove", true);
         boolean isSoundEnabled = pref.getBoolean("soundEnabled", true);
@@ -432,6 +444,7 @@ public class MainActivity extends AppCompatActivity
         othelloView.setShowLastMove(isShowLastMove);
         othelloView.setSoundEnabled(isSoundEnabled);
         othelloView.setHandicap(handicapTarget, handicapCount);
+        othelloView.setRandomMode(isRandomMode);
 
         if (history != null) {
             // 保存されたゲームがある場合は復元
@@ -538,7 +551,9 @@ public class MainActivity extends AppCompatActivity
         OthelloView othelloView = findViewById(R.id.othelloView);
 
         String text = "Lv." + level;
-        if (othelloView.isHandicapEnabled()) {
+        if (othelloView.isRandomMode()) {
+            text += " (ランダム)";
+        } else if (othelloView.isHandicapEnabled()) {
             text += " (ハンデ)";
         }
         txtLevel.setText(text);
