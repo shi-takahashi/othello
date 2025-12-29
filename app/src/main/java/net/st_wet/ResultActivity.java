@@ -58,8 +58,10 @@ public class ResultActivity extends AppCompatActivity {
         int win = 0;
         int lose = 0;
         int sum = 0;
+        int count = 0;
 
         if (data != null) {
+            count = data.length;
             for (int value : data) {
                 if (value > 0) {
                     win++;
@@ -72,17 +74,22 @@ public class ResultActivity extends AppCompatActivity {
             }
         }
 
-        String text = levelLabel + "  " + win + "勝" + lose + "敗　" + sum + "点";
+        // 平均点を計算（試行回数が0の場合は0）
+        float average = count > 0 ? (float) sum / count : 0;
+        String text = levelLabel + "  " + win + "勝" + lose + "敗　" + String.format("%.1f", average) + "点";
         textView.setText(text);
     }
 
     private void createCombinedChart(int[] data1, int[] data2, int[] data3) {
         LineChart mChart = findViewById(R.id.line_chart);
 
+        // データがない場合のメッセージを設定
+        mChart.setNoDataText("同じレベルで10回以上プレイすると\nグラフが表示されます");
+
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
 
-        int globalMin = 0;  // 最小値は0（マイナスにならない）
-        int globalMax = 10;
+        float globalMin = 0;  // 最小値は0（マイナスにならない）
+        float globalMax = 10;
         int maxDataLength = 10;
 
         // Lv1のデータセット作成
@@ -123,7 +130,7 @@ public class ResultActivity extends AppCompatActivity {
         xAxis.setEnabled(true);
         xAxis.setLabelCount(5);
         xAxis.enableGridDashedLine(10f, 10f, 0f);
-        xAxis.setAxisMinimum(1f);
+        xAxis.setAxisMinimum(10f);
         xAxis.setAxisMaximum(maxDataLength);
         xAxis.setValueFormatter(new ValueFormatter() {
             @Override
@@ -159,11 +166,11 @@ public class ResultActivity extends AppCompatActivity {
 
     private static class ChartDataResult {
         LineDataSet dataSet;
-        int min;
-        int max;
+        float min;
+        float max;
         int dataLength;
 
-        ChartDataResult(LineDataSet dataSet, int min, int max, int dataLength) {
+        ChartDataResult(LineDataSet dataSet, float min, float max, int dataLength) {
             this.dataSet = dataSet;
             this.min = min;
             this.max = max;
@@ -172,28 +179,29 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     private ChartDataResult createDataSet(int[] _data, int color, String label) {
-        if (_data == null || _data.length == 0) {
+        // 試行回数10回未満はグラフに表示しない
+        if (_data == null || _data.length < 10) {
             return null;
         }
 
         int sum = 0;
-        int min = 0;  // 最小値は0（マイナスにならない）
-        int max = 0;
+        float min = 0;  // 最小値は0（マイナスにならない）
+        float max = 0;
         ArrayList<Entry> values = new ArrayList<>();
 
-        int[] data = new int[_data.length];
         for (int i = 0; i < _data.length; i++) {
             // マイナスは0扱い（勝った時のみ加算）
             int point = _data[i] > 0 ? _data[i] : 0;
             sum += point;
-            data[i] = sum;
-            if (sum > max) {
-                max = sum;
+            // 10回目以降のみグラフに表示（1〜9回目は平均がブレやすいため除外）
+            if (i >= 9) {
+                // 各時点での平均を計算
+                float average = (float) sum / (i + 1);
+                values.add(new Entry(i + 1, average, null, null));
+                if (average > max) {
+                    max = average;
+                }
             }
-        }
-
-        for (int i = 0; i < data.length; i++) {
-            values.add(new Entry(i + 1, data[i], null, null));
         }
 
         LineDataSet dataSet = new LineDataSet(values, label);
