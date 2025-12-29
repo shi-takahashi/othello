@@ -167,10 +167,10 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 // リリースビルドではDEBUGメニューを非表示
-                boolean isDebuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-                if (!isDebuggable) {
-                    popup.getMenu().removeItem(R.id.menu_result_test);
-                }
+//                boolean isDebuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+//                if (!isDebuggable) {
+//                    popup.getMenu().removeItem(R.id.menu_result_test);
+//                }
 
                 popup.show();
 
@@ -188,8 +188,8 @@ public class MainActivity extends AppCompatActivity
                             setting();
                         } else if (itemId == R.id.menu_end) {
                             end();
-                        } else if (itemId == R.id.menu_result_test) {
-                            resultTest();
+//                        } else if (itemId == R.id.menu_result_test) {
+//                            resultTest();
                         }
                         return false;
                     }
