@@ -86,19 +86,44 @@ public class Board implements Cloneable
     }
 
     public void reset() {
+        reset(0, 1);
+    }
+
+    public void reset(int handicapTarget, int handicapCount) {
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 cells[r][c].setStatus(E_STATUS.None);
             }
         }
-        init();
+        init(handicapTarget, handicapCount);
     }
 
     public void init() {
+        init(0, 1);
+    }
+
+    /**
+     * ハンディキャップ付きで初期化
+     * @param handicapTarget 0=なし, 1=プレイヤー(黒), 2=CPU(白)
+     * @param handicapCount 角の数 (1〜4)
+     */
+    public void init(int handicapTarget, int handicapCount) {
         cells[ROWS/2 -1][COLS/2 -1].setStatus(E_STATUS.Black);
         cells[ROWS/2 -1][COLS/2   ].setStatus(E_STATUS.White);
         cells[ROWS/2   ][COLS/2 -1].setStatus(E_STATUS.White);
         cells[ROWS/2   ][COLS/2   ].setStatus(E_STATUS.Black);
+
+        // ハンディキャップの角を配置
+        if (handicapTarget != 0 && handicapCount >= 1) {
+            E_STATUS handicapColor = (handicapTarget == 1) ? E_STATUS.Black : E_STATUS.White;
+
+            // 角の位置: 左上, 右下, 右上, 左下の順
+            int[][] corners = {{0, 0}, {ROWS-1, COLS-1}, {0, COLS-1}, {ROWS-1, 0}};
+
+            for (int i = 0; i < handicapCount && i < 4; i++) {
+                cells[corners[i][0]][corners[i][1]].setStatus(handicapColor);
+            }
+        }
 
         countCell();
 

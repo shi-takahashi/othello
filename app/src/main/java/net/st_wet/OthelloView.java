@@ -43,6 +43,8 @@ public class OthelloView extends View
     private SoundPool mSoundPool;
     private int mSoundIdPut;
     private boolean mSoundEnabled = true;
+    private int mHandicapTarget = 0;  // 0=なし, 1=自分, 2=相手
+    private int mHandicapCount = 1;   // 1〜4
 
     public OthelloView(Context context, AttributeSet atr) {
         super(context, atr);
@@ -89,6 +91,7 @@ public class OthelloView extends View
 
         // 罫線
         mPaint.setColor(Color.rgb(40, 40, 40));
+        mPaint.setStrokeWidth(1);
         for (int c = 0; c < Board.COLS; c++) {
             canvas.drawLine(cw * (c + 1), 0, cw * (c + 1), bh, mPaint);     // 縦線
         }
@@ -155,6 +158,15 @@ public class OthelloView extends View
             float y = (Board.ROWS * mBoard.getCellHeidht()) + (mBoard.getCellHeidht() / 2f);
             canvas.drawText(text, x, y, mPaint);
 //        }
+
+        // ハンデ情報
+        if (mHandicapTarget != 0) {
+            String target = (mHandicapTarget == 1) ? "自分" : "相手";
+            String handicapText = " ハンデ: " + target + "に角" + mHandicapCount + "つ";
+            mPaint.setTextSize(toDimensionTextSize(getContext(), 14.0f));
+            float handicapY = y + (mBoard.getCellHeidht() / 2f);
+            canvas.drawText(handicapText, x, handicapY, mPaint);
+        }
     }
 
     /**
@@ -282,7 +294,13 @@ public class OthelloView extends View
     }
 
     public void restart() {
-        mBoard.reset();
+        int actualHandicapTarget = mHandicapTarget;
+        // プレイヤーが白の場合、ハンディキャップの対象を入れ替える
+        // （Board.init()では1=黒、2=白として処理されるため）
+        if (mHandicapTarget != 0 && mMyTurn == E_STATUS.White) {
+            actualHandicapTarget = (mHandicapTarget == 1) ? 2 : 1;
+        }
+        mBoard.reset(actualHandicapTarget, mHandicapCount);
         mHistory = "";
         mbUseBack = false;
         invalidate();
@@ -303,7 +321,9 @@ public class OthelloView extends View
         } else {
             point = count_white - count_black;
         }
-        ((MainActivity) getContext()).saveResult(level, point, mbUseBack);
+        // 待ったを使った場合、またはハンデを使った場合は成績に含めない
+        boolean excludeFromStats = mbUseBack || isHandicapEnabled();
+        ((MainActivity) getContext()).saveResult(level, point, excludeFromStats);
 
         String message = "";
         if (mMyTurn == E_STATUS.Black) {
@@ -394,6 +414,23 @@ public class OthelloView extends View
 
     public void setSoundEnabled(boolean soundEnabled) {
         this.mSoundEnabled = soundEnabled;
+    }
+
+    public int getHandicapTarget() {
+        return this.mHandicapTarget;
+    }
+
+    public int getHandicapCount() {
+        return this.mHandicapCount;
+    }
+
+    public void setHandicap(int target, int count) {
+        this.mHandicapTarget = target;
+        this.mHandicapCount = count;
+    }
+
+    public boolean isHandicapEnabled() {
+        return this.mHandicapTarget != 0;
     }
 
     public void back() {

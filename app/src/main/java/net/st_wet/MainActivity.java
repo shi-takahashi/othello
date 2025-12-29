@@ -75,6 +75,15 @@ public class MainActivity extends AppCompatActivity
                         isNeedRestart = true;
                     }
 
+                    int handicapTarget = data.getIntExtra("handicapTarget", 0);
+                    int handicapCount = data.getIntExtra("handicapCount", 1);
+                    if (othelloView.getHandicapTarget() != handicapTarget ||
+                        othelloView.getHandicapCount() != handicapCount) {
+                        othelloView.setHandicap(handicapTarget, handicapCount);
+                        // 要リスタート
+                        isNeedRestart = true;
+                    }
+
                     boolean isReturnalbe = data.getBooleanExtra("returnable", false);
                     View btnBack = findViewById(R.id.btnBack);
                     btnBack.setVisibility(isReturnalbe ? View.VISIBLE : View.GONE);
@@ -92,6 +101,8 @@ public class MainActivity extends AppCompatActivity
                     SharedPreferences.Editor editor = pref.edit();
                     editor.putInt("level", level);
                     editor.putBoolean("first", isFirst);
+                    editor.putInt("handicapTarget", handicapTarget);
+                    editor.putInt("handicapCount", handicapCount);
                     editor.putBoolean("returnable", isReturnalbe);
                     editor.putBoolean("showLastMove", isShowLastMove);
                     editor.putBoolean("soundEnabled", isSoundEnabled);
@@ -269,6 +280,12 @@ public class MainActivity extends AppCompatActivity
         boolean isReturnable = pref.getBoolean("returnable", false);
         intent.putExtra("returnable", isReturnable);
 
+        int handicapTarget = pref.getInt("handicapTarget", 0);
+        intent.putExtra("handicapTarget", handicapTarget);
+
+        int handicapCount = pref.getInt("handicapCount", 1);
+        intent.putExtra("handicapCount", handicapCount);
+
         boolean isShowLastMove = pref.getBoolean("showLastMove", true);
         intent.putExtra("showLastMove", isShowLastMove);
 
@@ -340,23 +357,18 @@ public class MainActivity extends AppCompatActivity
         boolean bUseBack = pref.getBoolean("useBack", false);
         int level = pref.getInt("level", 2);
         boolean isFirst = pref.getBoolean("first", true);
+        int handicapTarget = pref.getInt("handicapTarget", 0);
+        int handicapCount = pref.getInt("handicapCount", 1);
         boolean isReturnalbe = pref.getBoolean("returnable", false);
         boolean isShowLastMove = pref.getBoolean("showLastMove", true);
         boolean isSoundEnabled = pref.getBoolean("soundEnabled", true);
 
         OthelloView othelloView = findViewById(R.id.othelloView);
 
-        if (history != null) {
-            othelloView.restore(currentTurn, cellsStatus, history);
-        }
-
         othelloView.setUseBack(bUseBack);
 
         int depth = level * 2 - 1;
         othelloView.setDepth(depth);
-
-        // レベル表示を更新
-        updateLevelDisplay(level);
 
         if (isFirst) {
             othelloView.setTurn(Cell.E_STATUS.Black);
@@ -369,6 +381,18 @@ public class MainActivity extends AppCompatActivity
 
         othelloView.setShowLastMove(isShowLastMove);
         othelloView.setSoundEnabled(isSoundEnabled);
+        othelloView.setHandicap(handicapTarget, handicapCount);
+
+        if (history != null) {
+            // 保存されたゲームがある場合は復元
+            othelloView.restore(currentTurn, cellsStatus, history);
+        } else {
+            // 新規ゲームの場合はハンデ設定を適用して初期化
+            othelloView.restart();
+        }
+
+        // レベル表示を更新（ハンデ設定後に呼ぶ）
+        updateLevelDisplay(level);
     }
 
     public boolean getFirst() {
@@ -461,7 +485,13 @@ public class MainActivity extends AppCompatActivity
      */
     private void updateLevelDisplay(int level) {
         TextView txtLevel = findViewById(R.id.txtLevel);
-        txtLevel.setText("Lv." + level);
+        OthelloView othelloView = findViewById(R.id.othelloView);
+
+        String text = "Lv." + level;
+        if (othelloView.isHandicapEnabled()) {
+            text += " (ハンデ)";
+        }
+        txtLevel.setText(text);
     }
 
     /**

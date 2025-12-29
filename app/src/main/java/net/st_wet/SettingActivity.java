@@ -15,6 +15,8 @@ public class SettingActivity extends AppCompatActivity
 {
     private int level = 0;
     private boolean isFirst = true;
+    private int handicapTarget = 0;  // 0=なし, 1=自分, 2=相手
+    private int handicapCount = 1;   // 1〜4
     private boolean isReturnalbe = true;
     private boolean isShowLastMove = true;
     private boolean isSoundEnabled = true;
@@ -22,6 +24,9 @@ public class SettingActivity extends AppCompatActivity
 
     private MaterialButtonToggleGroup levelToggleGroup;
     private MaterialButtonToggleGroup tebanToggleGroup;
+    private MaterialButtonToggleGroup handicapTargetToggleGroup;
+    private MaterialButtonToggleGroup handicapCountToggleGroup;
+    private View handicapCountContainer;
     private SwitchMaterial switchReturnable;
     private SwitchMaterial switchShowLastMove;
     private SwitchMaterial switchSound;
@@ -36,6 +41,8 @@ public class SettingActivity extends AppCompatActivity
 
         level = intent.getIntExtra("level", 0);
         isFirst = intent.getBooleanExtra("first", true);
+        handicapTarget = intent.getIntExtra("handicapTarget", 0);
+        handicapCount = intent.getIntExtra("handicapCount", 1);
         isReturnalbe = intent.getBooleanExtra("returnable", false);
         isShowLastMove = intent.getBooleanExtra("showLastMove", true);
         isSoundEnabled = intent.getBooleanExtra("soundEnabled", true);
@@ -44,6 +51,9 @@ public class SettingActivity extends AppCompatActivity
         // Initialize views
         levelToggleGroup = findViewById(R.id.levelToggleGroup);
         tebanToggleGroup = findViewById(R.id.tebanToggleGroup);
+        handicapTargetToggleGroup = findViewById(R.id.handicapTargetToggleGroup);
+        handicapCountToggleGroup = findViewById(R.id.handicapCountToggleGroup);
+        handicapCountContainer = findViewById(R.id.handicapCountContainer);
         switchReturnable = findViewById(R.id.switchReturnable);
         switchShowLastMove = findViewById(R.id.switchShowLastMove);
         switchSound = findViewById(R.id.switchSound);
@@ -51,6 +61,7 @@ public class SettingActivity extends AppCompatActivity
 
         loadLevel();
         loadTeban();
+        loadHandicap();
         loadReturnSetting();
         switchShowLastMove.setChecked(isShowLastMove);
         switchSound.setChecked(isSoundEnabled);
@@ -86,6 +97,43 @@ public class SettingActivity extends AppCompatActivity
             }
         });
 
+        // Handicap target selection listener
+        handicapTargetToggleGroup.addOnButtonCheckedListener(new MaterialButtonToggleGroup.OnButtonCheckedListener() {
+            @Override
+            public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked) {
+                if (isChecked) {
+                    if (checkedId == R.id.handicapNone) {
+                        handicapTarget = 0;
+                        handicapCountContainer.setVisibility(View.GONE);
+                    } else if (checkedId == R.id.handicapPlayer) {
+                        handicapTarget = 1;
+                        handicapCountContainer.setVisibility(View.VISIBLE);
+                    } else if (checkedId == R.id.handicapCpu) {
+                        handicapTarget = 2;
+                        handicapCountContainer.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+        });
+
+        // Handicap count selection listener
+        handicapCountToggleGroup.addOnButtonCheckedListener(new MaterialButtonToggleGroup.OnButtonCheckedListener() {
+            @Override
+            public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked) {
+                if (isChecked) {
+                    if (checkedId == R.id.handicapCount1) {
+                        handicapCount = 1;
+                    } else if (checkedId == R.id.handicapCount2) {
+                        handicapCount = 2;
+                    } else if (checkedId == R.id.handicapCount3) {
+                        handicapCount = 3;
+                    } else if (checkedId == R.id.handicapCount4) {
+                        handicapCount = 4;
+                    }
+                }
+            }
+        });
+
         // Switch listeners
         switchReturnable.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isReturnalbe = isChecked;
@@ -110,6 +158,8 @@ public class SettingActivity extends AppCompatActivity
                 Intent intent = new Intent();
                 intent.putExtra("level", level);
                 intent.putExtra("first", isFirst);
+                intent.putExtra("handicapTarget", handicapTarget);
+                intent.putExtra("handicapCount", handicapCount);
                 intent.putExtra("returnable", isReturnalbe);
                 intent.putExtra("showLastMove", isShowLastMove);
                 intent.putExtra("soundEnabled", isSoundEnabled);
@@ -157,5 +207,43 @@ public class SettingActivity extends AppCompatActivity
 
     private void loadReturnSetting() {
         switchReturnable.setChecked(isReturnalbe);
+    }
+
+    private void loadHandicap() {
+        // Target selection
+        int targetButtonId = R.id.handicapNone;
+        switch (handicapTarget) {
+            case 0:
+                targetButtonId = R.id.handicapNone;
+                handicapCountContainer.setVisibility(View.GONE);
+                break;
+            case 1:
+                targetButtonId = R.id.handicapPlayer;
+                handicapCountContainer.setVisibility(View.VISIBLE);
+                break;
+            case 2:
+                targetButtonId = R.id.handicapCpu;
+                handicapCountContainer.setVisibility(View.VISIBLE);
+                break;
+        }
+        handicapTargetToggleGroup.check(targetButtonId);
+
+        // Count selection
+        int countButtonId = R.id.handicapCount1;
+        switch (handicapCount) {
+            case 1:
+                countButtonId = R.id.handicapCount1;
+                break;
+            case 2:
+                countButtonId = R.id.handicapCount2;
+                break;
+            case 3:
+                countButtonId = R.id.handicapCount3;
+                break;
+            case 4:
+                countButtonId = R.id.handicapCount4;
+                break;
+        }
+        handicapCountToggleGroup.check(countButtonId);
     }
 }

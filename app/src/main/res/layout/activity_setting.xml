@@ -157,6 +157,163 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Handicap Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/SettingCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:text="ハンディキャップ"
+                        android:textColor="@color/setting_text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="角を与える"
+                        android:textColor="@color/setting_text_secondary"
+                        android:textSize="12sp" />
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/handicapTargetToggleGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:checkedButton="@id/handicapNone"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/handicapNone"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:text="なし"
+                            android:textColor="@color/setting_text_primary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/setting_card_stroke" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/handicapPlayer"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:text="自分"
+                            android:textColor="@color/setting_text_primary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/setting_card_stroke" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/handicapCpu"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:text="相手"
+                            android:textColor="@color/setting_text_primary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/setting_card_stroke" />
+
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                    <LinearLayout
+                        android:id="@+id/handicapCountContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:text="角の数"
+                            android:textColor="@color/setting_text_secondary"
+                            android:textSize="12sp" />
+
+                        <com.google.android.material.button.MaterialButtonToggleGroup
+                            android:id="@+id/handicapCountToggleGroup"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:checkedButton="@id/handicapCount1"
+                            app:selectionRequired="true"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/handicapCount1"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:text="1"
+                                android:textColor="@color/setting_text_primary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/setting_card_stroke" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/handicapCount2"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:text="2"
+                                android:textColor="@color/setting_text_primary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/setting_card_stroke" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/handicapCount3"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:text="3"
+                                android:textColor="@color/setting_text_primary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/setting_card_stroke" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/handicapCount4"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:text="4"
+                                android:textColor="@color/setting_text_primary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/setting_card_stroke" />
+
+                        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="※ハンディキャップ使用時は成績に記録されません"
+                        android:textColor="@color/setting_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Undo Card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/SettingCard"
