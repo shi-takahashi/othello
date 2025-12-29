@@ -492,7 +492,13 @@ public class OthelloView extends View
                 .setTitle("結果")
                 .setMessage(message)
                 .setPositiveButton("閉じる", null)
-                .setNeutralButton("もう一回", new DialogInterface.OnClickListener() {
+                .setNeutralButton("成績確認", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ((MainActivity) getContext()).result();
+                    }
+                })
+                .setNegativeButton("もう一回", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         restart();
