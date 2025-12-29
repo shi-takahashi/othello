@@ -356,7 +356,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="※ランダムモード使用時は成績に記録されません"
+                            android:text="※成績は通常モードとは別に記録されます"
                             android:textColor="@color/setting_text_secondary"
                             android:textSize="11sp" />
 

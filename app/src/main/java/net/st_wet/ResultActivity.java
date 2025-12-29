@@ -32,17 +32,32 @@ public class ResultActivity extends AppCompatActivity {
         setContentView(R.layout.activity_result);
 
         Intent intent = getIntent();
+
+        // 通常モード
         int[] chart_data1 = intent.getIntArrayExtra("level1");
         int[] chart_data2 = intent.getIntArrayExtra("level2");
         int[] chart_data3 = intent.getIntArrayExtra("level3");
 
-        // 成績テキストを更新
+        // ランダムモード
+        int[] random_data1 = intent.getIntArrayExtra("randomLevel1");
+        int[] random_data2 = intent.getIntArrayExtra("randomLevel2");
+        int[] random_data3 = intent.getIntArrayExtra("randomLevel3");
+
+        // 通常モードの成績テキストを更新
         updateScoreText(R.id.textLv1, "Lv.1", chart_data1);
         updateScoreText(R.id.textLv2, "Lv.2", chart_data2);
         updateScoreText(R.id.textLv3, "Lv.3", chart_data3);
 
-        // 統合グラフを作成
-        createCombinedChart(chart_data1, chart_data2, chart_data3);
+        // ランダムモードの成績テキストを更新
+        updateScoreText(R.id.textRandomLv1, "Lv.1", random_data1);
+        updateScoreText(R.id.textRandomLv2, "Lv.2", random_data2);
+        updateScoreText(R.id.textRandomLv3, "Lv.3", random_data3);
+
+        // 通常モードのグラフを作成
+        createCombinedChart(R.id.line_chart, chart_data1, chart_data2, chart_data3);
+
+        // ランダムモードのグラフを作成
+        createCombinedChart(R.id.line_chart_random, random_data1, random_data2, random_data3);
 
         Button btnReturn = (Button)findViewById(R.id.btnReturn);
         btnReturn.setOnClickListener(new View.OnClickListener() {
@@ -80,8 +95,8 @@ public class ResultActivity extends AppCompatActivity {
         textView.setText(text);
     }
 
-    private void createCombinedChart(int[] data1, int[] data2, int[] data3) {
-        LineChart mChart = findViewById(R.id.line_chart);
+    private void createCombinedChart(int chartId, int[] data1, int[] data2, int[] data3) {
+        LineChart mChart = findViewById(chartId);
 
         // データがない場合のメッセージを設定
         mChart.setNoDataText("同じレベルで10回以上プレイすると\nグラフが表示されます");

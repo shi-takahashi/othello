@@ -462,9 +462,9 @@ public class OthelloView extends View
         } else {
             point = count_white - count_black;
         }
-        // 待ったを使った場合、ハンデを使った場合、ランダムモードの場合は成績に含めない
-        boolean excludeFromStats = mbUseBack || isHandicapEnabled() || mRandomMode;
-        ((MainActivity) getContext()).saveResult(level, point, excludeFromStats);
+        // 待ったを使った場合、ハンデを使った場合は成績に含めない
+        boolean excludeFromStats = mbUseBack || isHandicapEnabled();
+        ((MainActivity) getContext()).saveResult(level, point, excludeFromStats, mRandomMode);
 
         String message = "";
         if (mMyTurn == E_STATUS.Black) {

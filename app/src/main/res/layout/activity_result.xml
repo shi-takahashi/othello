@@ -8,48 +8,121 @@
     android:fitsSystemWindows="true"
     tools:context=".ResultActivity">
 
-    <!-- 成績テキスト表示エリア -->
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <TextView
-            android:id="@+id/textLv1"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@android:color/black"
-            android:text="Lv.1  0勝0敗　0点"
-            android:paddingBottom="4dp" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textLv2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="#0000FF"
-            android:text="Lv.2  0勝0敗　0点"
-            android:paddingBottom="4dp" />
+            <!-- 通常モード -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="通常モード"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:background="#E0E0E0"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp" />
 
-        <TextView
-            android:id="@+id/textLv3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="#FF0000"
-            android:text="Lv.3  0勝0敗　0点"
-            android:paddingBottom="4dp" />
-    </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp">
 
-    <!-- 統合グラフ（横幅と縦幅がほぼ等しくなるよう縦幅を縮小） -->
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/line_chart"
-        android:layout_width="match_parent"
-        android:layout_height="280dp"
-        android:layout_marginHorizontal="16dp"
-        />
+                <TextView
+                    android:id="@+id/textLv1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/black"
+                    android:text="Lv.1  0勝0敗　0点" />
+
+                <TextView
+                    android:id="@+id/textLv2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="#0000FF"
+                    android:text="Lv.2  0勝0敗　0点" />
+
+                <TextView
+                    android:id="@+id/textLv3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="#FF0000"
+                    android:text="Lv.3  0勝0敗　0点" />
+            </LinearLayout>
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/line_chart"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginHorizontal="16dp" />
+
+            <!-- ランダムモード -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ランダムモード"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:background="#E0E0E0"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:layout_marginTop="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp">
+
+                <TextView
+                    android:id="@+id/textRandomLv1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/black"
+                    android:text="Lv.1  0勝0敗　0点" />
+
+                <TextView
+                    android:id="@+id/textRandomLv2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="#0000FF"
+                    android:text="Lv.2  0勝0敗　0点" />
+
+                <TextView
+                    android:id="@+id/textRandomLv3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="#FF0000"
+                    android:text="Lv.3  0勝0敗　0点" />
+            </LinearLayout>
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/line_chart_random"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="8dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
     <LinearLayout
         android:layout_width="match_parent"

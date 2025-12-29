@@ -264,9 +264,12 @@ public class MainActivity extends AppCompatActivity
 
     public void result() {
         Intent intent = new Intent(MainActivity.this, ResultActivity.class);
-        intent.putExtra("level1", loadResult(1));
-        intent.putExtra("level2", loadResult(2));
-        intent.putExtra("level3", loadResult(3));
+        intent.putExtra("level1", loadResult(1, false));
+        intent.putExtra("level2", loadResult(2, false));
+        intent.putExtra("level3", loadResult(3, false));
+        intent.putExtra("randomLevel1", loadResult(1, true));
+        intent.putExtra("randomLevel2", loadResult(2, true));
+        intent.putExtra("randomLevel3", loadResult(3, true));
         startActivity(intent);
     }
 
@@ -464,24 +467,25 @@ public class MainActivity extends AppCompatActivity
         return isFirst;
     }
 
-    public int[] loadResult(int level) {
+    public int[] loadResult(int level, boolean isRandomMode) {
         String key = "";
+        String keyPrefix = isRandomMode ? "resultRandom" : "result";
 
         switch (level) {
             case 1:
-                key = "resultOne";
+                key = keyPrefix + "One";
                 break;
             case 2:
-                key = "resultTwo";
+                key = keyPrefix + "Two";
                 break;
             case 3:
-                key = "resultThree";
+                key = keyPrefix + "Three";
                 break;
             default:
                 break;
         }
 
-        if (key == "") {
+        if (key.isEmpty()) {
             return null;
         }
 
@@ -502,26 +506,27 @@ public class MainActivity extends AppCompatActivity
         return ia;
     }
 
-    public void saveResult(int level, int point, boolean usedBack) {
+    public void saveResult(int level, int point, boolean usedBack, boolean isRandomMode) {
         // 戻るボタンを使っていない場合のみローカルに保存
         if (!usedBack) {
             String key = "";
+            String keyPrefix = isRandomMode ? "resultRandom" : "result";
 
             switch (level) {
                 case 1:
-                    key = "resultOne";
+                    key = keyPrefix + "One";
                     break;
                 case 2:
-                    key = "resultTwo";
+                    key = keyPrefix + "Two";
                     break;
                 case 3:
-                    key = "resultThree";
+                    key = keyPrefix + "Three";
                     break;
                 default:
                     break;
             }
 
-            if (key != "") {
+            if (!key.isEmpty()) {
                 SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
                 String result = pref.getString(key, null);
@@ -539,7 +544,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         // Firebase Analytics にイベント送信（戻る使用時も送信）
-        sendGameResultEvent(level, point, usedBack);
+        sendGameResultEvent(level, point, usedBack, isRandomMode);
     }
 
     /**
@@ -564,9 +569,15 @@ public class MainActivity extends AppCompatActivity
      * @param level レベル (1, 2, 3)
      * @param point 石差 (正: 勝ち, 負: 負け, 0: 引き分け)
      * @param usedBack 戻るボタンを使用したか
+     * @param isRandomMode ランダムモードか
      */
-    private void sendGameResultEvent(int level, int point, boolean usedBack) {
-        String eventName = "game_result_lv" + level;
+    private void sendGameResultEvent(int level, int point, boolean usedBack, boolean isRandomMode) {
+        String eventName;
+        if (isRandomMode) {
+            eventName = "game_result_random_lv" + level;
+        } else {
+            eventName = "game_result_lv" + level;
+        }
         if (usedBack) {
             eventName += "_matta";
         }
