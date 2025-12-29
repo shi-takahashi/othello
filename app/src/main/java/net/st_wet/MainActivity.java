@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity
     private AdView mAdView;
     private FirebaseAnalytics mFirebaseAnalytics;
     private boolean mShouldSaveOnPause = false;  // 中断ボタンが押された場合のみtrue
+    private boolean mNeedsRestore = true;  // onCreate後の初回onResumeでのみ復元処理を行う
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -425,20 +426,8 @@ public class MainActivity extends AppCompatActivity
                 editor.remove("history");
                 editor.remove("useBack");
             }
-        } else {
-            // 他の画面に遷移する場合は対局状態を保存（従来通り）
-            if (othelloView.getCurrentTurn() == Cell.E_STATUS.None) {
-                editor.remove("currentTurn");
-                editor.remove("cellsStatus");
-                editor.remove("history");
-                editor.remove("useBack");
-            } else {
-                editor.putInt("currentTurn", othelloView.getCurrentTurn().ordinal());
-                editor.putString("cellsStatus", othelloView.getCellsStatus());
-                editor.putString("history", othelloView.getHistory());
-                editor.putBoolean("useBack", othelloView.getUseBack());
-            }
         }
+        // isFinishing() が false の場合（設定画面遷移、スワイプアップ等）は何もしない
 
         int level = (othelloView.getDepth() + 1) / 2;
         editor.putInt("level", level);
@@ -491,12 +480,24 @@ public class MainActivity extends AppCompatActivity
         othelloView.setHandicap(handicapTarget, handicapCount);
         othelloView.setRandomMode(isRandomMode);
 
-        if (history != null) {
-            // 保存されたゲームがある場合は復元
-            othelloView.restore(currentTurn, cellsStatus, history);
-        } else {
-            // 新規ゲームの場合はハンデ設定を適用して初期化
-            othelloView.restart();
+        // 初回起動時のみ復元/リスタート処理を行う
+        // 設定画面やヘルプ画面から戻ってきた場合は何もしない
+        if (mNeedsRestore) {
+            mNeedsRestore = false;
+            if (history != null) {
+                // 保存されたゲームがある場合は復元
+                othelloView.restore(currentTurn, cellsStatus, history);
+                // 復元後は保存状態をクリア（次回スワイプアップ時に復元されないように）
+                SharedPreferences.Editor editor = pref.edit();
+                editor.remove("currentTurn");
+                editor.remove("cellsStatus");
+                editor.remove("history");
+                editor.remove("useBack");
+                editor.apply();
+            } else {
+                // 新規ゲームの場合はハンデ設定を適用して初期化
+                othelloView.restart();
+            }
         }
 
         // レベル表示を更新（ハンデ設定後に呼ぶ）
