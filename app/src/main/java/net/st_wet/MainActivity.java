@@ -205,6 +205,43 @@ public class MainActivity extends AppCompatActivity
                 setting();
             }
         });
+
+        // 初回起動時の説明ダイアログを表示
+        showFirstLaunchGuide();
+    }
+
+    /**
+     * 初回起動時にアプリの機能を説明するダイアログを表示
+     */
+    private void showFirstLaunchGuide() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean hasShownGuide = pref.getBoolean("hasShownFirstLaunchGuide", false);
+
+        if (hasShownGuide) {
+            return;
+        }
+
+        String message =
+                "やっぱりオセロは、自分のレベルに合わせて、CPUの強さを3段階から選べます。\n\n" +
+                "設定画面では、角に石を置いた状態から始められる「ハンディキャップ」機能も用意しています。\n\n" +
+                "さらに、毎回異なる局面からスタートできる「ランダムモード」も実装しています。いつもと違う対局を楽しめます。\n\n" +
+                "対戦成績は「成績」画面でいつでも確認できます。\n\n" +
+                "詳しくは、左上のメニューから「ヘルプ」をご覧ください。";
+
+        new AlertDialog.Builder(this)
+                .setTitle("はじめに")
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 表示済みとして記録
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putBoolean("hasShownFirstLaunchGuide", true);
+                        editor.apply();
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private void showPopupMenu() {
