@@ -13,6 +13,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -143,15 +146,27 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 PopupMenu popup = new PopupMenu(getApplicationContext(), view);
                 popup.getMenuInflater().inflate(R.menu.main, popup.getMenu());
+
+                // アイコンを表示する
+                try {
+                    Field mPopup = popup.getClass().getDeclaredField("mPopup");
+                    mPopup.setAccessible(true);
+                    Object menuPopupHelper = mPopup.get(popup);
+                    Method setForceShowIcon = menuPopupHelper.getClass()
+                            .getDeclaredMethod("setForceShowIcon", boolean.class);
+                    setForceShowIcon.setAccessible(true);
+                    setForceShowIcon.invoke(menuPopupHelper, true);
+                } catch (Exception e) {
+                    // リフレクション失敗時は無視
+                }
+
                 popup.show();
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
                         int itemId = menuItem.getItemId();
-                        if (itemId == R.id.menu_restart) {
-                            restart();
-                        } else if (itemId == R.id.menu_interrupt) {
+                        if (itemId == R.id.menu_interrupt) {
                             interrupt();
                         } else if (itemId == R.id.menu_help) {
                             showHelp();

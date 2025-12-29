@@ -3,20 +3,22 @@
     xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
         android:id="@+id/menu_help"
+        android:icon="@drawable/ic_menu_help"
         android:title="ヘルプ" />
     <item
-        android:id="@+id/menu_restart"
-        android:title="最初からやり直す" />
-    <item
-        android:id="@+id/menu_interrupt"
-        android:title="一時中断する" />
-    <item
         android:id="@+id/menu_result"
-        android:title="成績を確認する"/>
+        android:icon="@drawable/ic_menu_chart"
+        android:title="成績"/>
     <item
         android:id="@+id/menu_setting"
-        android:title="設定を変更する"/>
+        android:icon="@drawable/ic_menu_settings"
+        android:title="設定"/>
+    <item
+        android:id="@+id/menu_interrupt"
+        android:icon="@drawable/ic_menu_pause"
+        android:title="中断" />
     <item
         android:id="@+id/menu_end"
-        android:title="オセロを終了する"/>
+        android:icon="@drawable/ic_menu_exit"
+        android:title="終了"/>
 </menu>
