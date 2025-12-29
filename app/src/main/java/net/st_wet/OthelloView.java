@@ -350,13 +350,7 @@ public class OthelloView extends View
                 getContext())
                 .setTitle("結果")
                 .setMessage(message)
-                .setPositiveButton("終了", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ((MainActivity) getContext()).end();
-                    }
-                })
-//                .setNegativeButton("NO", null)
+                .setPositiveButton("閉じる", null)
                 .setNeutralButton("もう一回", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -434,6 +428,11 @@ public class OthelloView extends View
     }
 
     public void back() {
+        // 対局終了後は待ったを使えないようにする
+        if (mBoard.getTurn() == E_STATUS.None) {
+            return;
+        }
+
         E_STATUS[] statuses = E_STATUS.values();
 
         if (mHistory != "") {

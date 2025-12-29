@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity
 
     private AdView mAdView;
     private FirebaseAnalytics mFirebaseAnalytics;
+    private boolean mShouldSaveOnPause = false;  // 中断ボタンが押された場合のみtrue
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -136,6 +137,24 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // アクションバーにカスタムメニューボタンを設定
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowCustomEnabled(true);
+            View customView = getLayoutInflater().inflate(R.layout.actionbar_menu_button, null);
+            androidx.appcompat.app.ActionBar.LayoutParams params = new androidx.appcompat.app.ActionBar.LayoutParams(
+                    androidx.appcompat.app.ActionBar.LayoutParams.WRAP_CONTENT,
+                    androidx.appcompat.app.ActionBar.LayoutParams.MATCH_PARENT,
+                    android.view.Gravity.END
+            );
+            getSupportActionBar().setCustomView(customView, params);
+            customView.findViewById(R.id.actionbar_menu_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showPopupMenu();
+                }
+            });
+        }
+
         // Firebase Analytics 初期化
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
@@ -160,59 +179,67 @@ public class MainActivity extends AppCompatActivity
                 end();
             }
         });
+        findViewById(R.id.btnInterrupt).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                interrupt();
+            }
+        });
+        findViewById(R.id.btnStart).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                restart();
+            }
+        });
         findViewById(R.id.btnLevelChange).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 setting();
             }
         });
-        findViewById(R.id.btnMenu).setOnClickListener(new View.OnClickListener() {
+    }
+
+    private void showPopupMenu() {
+        View anchorView = findViewById(R.id.actionbar_menu_button);
+        if (anchorView == null) {
+            anchorView = getWindow().getDecorView();
+        }
+        PopupMenu popup = new PopupMenu(this, anchorView);
+        popup.getMenuInflater().inflate(R.menu.main, popup.getMenu());
+
+        // アイコンを表示する
+        try {
+            Field mPopup = popup.getClass().getDeclaredField("mPopup");
+            mPopup.setAccessible(true);
+            Object menuPopupHelper = mPopup.get(popup);
+            Method setForceShowIcon = menuPopupHelper.getClass()
+                    .getDeclaredMethod("setForceShowIcon", boolean.class);
+            setForceShowIcon.setAccessible(true);
+            setForceShowIcon.invoke(menuPopupHelper, true);
+        } catch (Exception e) {
+            // リフレクション失敗時は無視
+        }
+
+        popup.show();
+
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
-            public void onClick(View view) {
-                PopupMenu popup = new PopupMenu(getApplicationContext(), view);
-                popup.getMenuInflater().inflate(R.menu.main, popup.getMenu());
-
-                // アイコンを表示する
-                try {
-                    Field mPopup = popup.getClass().getDeclaredField("mPopup");
-                    mPopup.setAccessible(true);
-                    Object menuPopupHelper = mPopup.get(popup);
-                    Method setForceShowIcon = menuPopupHelper.getClass()
-                            .getDeclaredMethod("setForceShowIcon", boolean.class);
-                    setForceShowIcon.setAccessible(true);
-                    setForceShowIcon.invoke(menuPopupHelper, true);
-                } catch (Exception e) {
-                    // リフレクション失敗時は無視
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                int itemId = menuItem.getItemId();
+                if (itemId == R.id.menu_interrupt) {
+                    interrupt();
+                } else if (itemId == R.id.menu_help) {
+                    showHelp();
+                } else if (itemId == R.id.menu_result) {
+                    result();
+                } else if (itemId == R.id.menu_setting) {
+                    setting();
+                } else if (itemId == R.id.menu_restart) {
+                    restart();
+                } else if (itemId == R.id.menu_end) {
+                    end();
                 }
-
-                // リリースビルドではDEBUGメニューを非表示
-//                boolean isDebuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-//                if (!isDebuggable) {
-//                    popup.getMenu().removeItem(R.id.menu_result_test);
-//                }
-
-                popup.show();
-
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        int itemId = menuItem.getItemId();
-                        if (itemId == R.id.menu_interrupt) {
-                            interrupt();
-                        } else if (itemId == R.id.menu_help) {
-                            showHelp();
-                        } else if (itemId == R.id.menu_result) {
-                            result();
-                        } else if (itemId == R.id.menu_setting) {
-                            setting();
-                        } else if (itemId == R.id.menu_end) {
-                            end();
-//                        } else if (itemId == R.id.menu_result_test) {
-//                            resultTest();
-                        }
-                        return false;
-                    }
-                });
+                return false;
             }
         });
     }
@@ -301,6 +328,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void interrupt() {
+        mShouldSaveOnPause = true;
         finishAndRemoveTask();
     }
 
@@ -319,16 +347,41 @@ public class MainActivity extends AppCompatActivity
 
         OthelloView othelloView = findViewById(R.id.othelloView);
 
-        if (othelloView.getCurrentTurn() == Cell.E_STATUS.None) {
-            editor.remove("currentTurn");
-            editor.remove("cellsStatus");
-            editor.remove("history");
-            editor.remove("useBack");
+        // アクティビティが終了する場合のみ、中断フラグを確認
+        if (isFinishing()) {
+            if (mShouldSaveOnPause) {
+                // 中断ボタンが押された場合は対局状態を保存
+                if (othelloView.getCurrentTurn() == Cell.E_STATUS.None) {
+                    editor.remove("currentTurn");
+                    editor.remove("cellsStatus");
+                    editor.remove("history");
+                    editor.remove("useBack");
+                } else {
+                    editor.putInt("currentTurn", othelloView.getCurrentTurn().ordinal());
+                    editor.putString("cellsStatus", othelloView.getCellsStatus());
+                    editor.putString("history", othelloView.getHistory());
+                    editor.putBoolean("useBack", othelloView.getUseBack());
+                }
+            } else {
+                // 終了ボタン等は対局状態をクリア
+                editor.remove("currentTurn");
+                editor.remove("cellsStatus");
+                editor.remove("history");
+                editor.remove("useBack");
+            }
         } else {
-            editor.putInt("currentTurn", othelloView.getCurrentTurn().ordinal());
-            editor.putString("cellsStatus", othelloView.getCellsStatus());
-            editor.putString("history", othelloView.getHistory());
-            editor.putBoolean("useBack", othelloView.getUseBack());
+            // 他の画面に遷移する場合は対局状態を保存（従来通り）
+            if (othelloView.getCurrentTurn() == Cell.E_STATUS.None) {
+                editor.remove("currentTurn");
+                editor.remove("cellsStatus");
+                editor.remove("history");
+                editor.remove("useBack");
+            } else {
+                editor.putInt("currentTurn", othelloView.getCurrentTurn().ordinal());
+                editor.putString("cellsStatus", othelloView.getCellsStatus());
+                editor.putString("history", othelloView.getHistory());
+                editor.putBoolean("useBack", othelloView.getUseBack());
+            }
         }
 
         int level = (othelloView.getDepth() + 1) / 2;
@@ -336,9 +389,6 @@ public class MainActivity extends AppCompatActivity
 
         boolean isFirst = othelloView.getFirst();
         editor.putBoolean("first", isFirst);
-
-        boolean isUseBack = othelloView.getUseBack();
-        editor.putBoolean("useBack", isUseBack);
 
         boolean isReturnalbe = findViewById(R.id.btnBack).getVisibility() == View.VISIBLE;
         editor.putBoolean("returnable", isReturnalbe);
