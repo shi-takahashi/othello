@@ -16,11 +16,13 @@ public class SettingActivity extends AppCompatActivity
     private int level = 0;
     private boolean isFirst = true;
     private boolean isReturnalbe = true;
+    private boolean isShowLastMove = true;
     private boolean isReset = false;
 
     private MaterialButtonToggleGroup levelToggleGroup;
     private MaterialButtonToggleGroup tebanToggleGroup;
     private SwitchMaterial switchReturnable;
+    private SwitchMaterial switchShowLastMove;
     private SwitchMaterial switchReset;
 
     @Override
@@ -33,17 +35,20 @@ public class SettingActivity extends AppCompatActivity
         level = intent.getIntExtra("level", 0);
         isFirst = intent.getBooleanExtra("first", true);
         isReturnalbe = intent.getBooleanExtra("returnable", false);
+        isShowLastMove = intent.getBooleanExtra("showLastMove", true);
         isReset = false;
 
         // Initialize views
         levelToggleGroup = findViewById(R.id.levelToggleGroup);
         tebanToggleGroup = findViewById(R.id.tebanToggleGroup);
         switchReturnable = findViewById(R.id.switchReturnable);
+        switchShowLastMove = findViewById(R.id.switchShowLastMove);
         switchReset = findViewById(R.id.switchReset);
 
         loadLevel();
         loadTeban();
         loadReturnSetting();
+        switchShowLastMove.setChecked(isShowLastMove);
         switchReset.setChecked(false);
 
         // Level selection listener
@@ -81,6 +86,10 @@ public class SettingActivity extends AppCompatActivity
             isReturnalbe = isChecked;
         });
 
+        switchShowLastMove.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isShowLastMove = isChecked;
+        });
+
         switchReset.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isReset = isChecked;
         });
@@ -93,6 +102,7 @@ public class SettingActivity extends AppCompatActivity
                 intent.putExtra("level", level);
                 intent.putExtra("first", isFirst);
                 intent.putExtra("returnable", isReturnalbe);
+                intent.putExtra("showLastMove", isShowLastMove);
                 intent.putExtra("reset", isReset);
                 setResult(RESULT_OK, intent);
                 finish();

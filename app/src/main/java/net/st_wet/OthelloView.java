@@ -36,6 +36,7 @@ public class OthelloView extends View
     private int mDepth = 3;
     private String mHistory = "";
     private boolean mbUseBack = false;  // 戻るボタンを使用して実際に戻ったかどうか
+    private boolean mShowLastMove = true;  // 直前の手を表示するかどうか
     private Cpu mCpu = null;
 
     public OthelloView(Context context, AttributeSet atr) {
@@ -97,6 +98,20 @@ public class OthelloView extends View
 
                 canvas.drawOval(cell.getStoneRectF(), mPaint);
             }
+        }
+
+        // 直前の手をマーキング
+        if (mShowLastMove && mHistory.length() >= 3) {
+            int lastIndex = mHistory.length() - 3;
+            int lastR = Integer.parseInt(mHistory.substring(lastIndex + 1, lastIndex + 2));
+            int lastC = Integer.parseInt(mHistory.substring(lastIndex + 2, lastIndex + 3));
+            Cell lastCell = cells[lastR][lastC];
+            mPaint.setColor(Color.RED);
+            mPaint.setAlpha(255);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(4);
+            canvas.drawCircle(lastCell.getCx(), lastCell.getCy(), cw * 0.15f, mPaint);
+            mPaint.setStyle(Paint.Style.FILL);
         }
 
         // 候補
@@ -350,6 +365,10 @@ public class OthelloView extends View
 
     public void setUseBack(boolean bUseBack) {
         this.mbUseBack = bUseBack;
+    }
+
+    public void setShowLastMove(boolean showLastMove) {
+        this.mShowLastMove = showLastMove;
     }
 
     public void back() {

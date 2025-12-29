@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity
                     View btnBack = findViewById(R.id.btnBack);
                     btnBack.setVisibility(isReturnalbe ? View.VISIBLE : View.GONE);
 
+                    boolean isShowLastMove = data.getBooleanExtra("showLastMove", true);
+                    othelloView.setShowLastMove(isShowLastMove);
+
                     boolean isReset = data.getBooleanExtra("reset", false);
 
                     // この後onResume()が走って復元されてしまうのでここで保存しておく
@@ -87,6 +90,7 @@ public class MainActivity extends AppCompatActivity
                     editor.putInt("level", level);
                     editor.putBoolean("first", isFirst);
                     editor.putBoolean("returnable", isReturnalbe);
+                    editor.putBoolean("showLastMove", isShowLastMove);
                     if (isReset == true) {
                         editor.remove("resultOne");
                         editor.remove("resultTwo");
@@ -261,6 +265,8 @@ public class MainActivity extends AppCompatActivity
         boolean isReturnable = pref.getBoolean("returnable", false);
         intent.putExtra("returnable", isReturnable);
 
+        boolean isShowLastMove = pref.getBoolean("showLastMove", true);
+        intent.putExtra("showLastMove", isShowLastMove);
 
         startActivityForResult(intent, REQUEST_CODE);
     }
@@ -328,6 +334,7 @@ public class MainActivity extends AppCompatActivity
         int level = pref.getInt("level", 2);
         boolean isFirst = pref.getBoolean("first", true);
         boolean isReturnalbe = pref.getBoolean("returnable", false);
+        boolean isShowLastMove = pref.getBoolean("showLastMove", true);
 
         OthelloView othelloView = findViewById(R.id.othelloView);
 
@@ -351,6 +358,8 @@ public class MainActivity extends AppCompatActivity
 
         View btnBack = findViewById(R.id.btnBack);
         btnBack.setVisibility(isReturnalbe ? View.VISIBLE : View.GONE);
+
+        othelloView.setShowLastMove(isShowLastMove);
     }
 
     public boolean getFirst() {
