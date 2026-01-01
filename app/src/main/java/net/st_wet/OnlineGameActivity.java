@@ -41,6 +41,7 @@ public class OnlineGameActivity extends AppCompatActivity {
     private boolean gameEnded = false;
     private Integer lastAppliedMoveRow = null;
     private Integer lastAppliedMoveCol = null;
+    private String lastPassedPlayer = null;  // 前回のパス状態を記録
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,19 +103,19 @@ public class OnlineGameActivity extends AppCompatActivity {
             String status = "none".equals(currentTurn) ? "finished" : "playing";
             String winner = "none".equals(currentTurn) ? othelloView.getWinner() : null;
 
+            // パス通知を先に表示し、lastPassedPlayerを更新（Firestoreリスナーとの競合を防ぐ）
+            if (passedPlayer != null) {
+                String passedName = passedPlayer.equals(myColor) ? "あなた" : "相手";
+                Toast.makeText(OnlineGameActivity.this,
+                        passedName + "は置ける場所がありません", Toast.LENGTH_SHORT).show();
+            }
+            lastPassedPlayer = passedPlayer;
+
             gameManager.updateGameState(boardState, currentTurn, row, col, status, winner, passedPlayer,
                     new FirestoreGameManager.OnUpdateListener() {
                         @Override
                         public void onSuccess() {
                             Log.d(TAG, "Game state updated successfully");
-                            // 自分側でもパス通知を表示
-                            if (passedPlayer != null) {
-                                runOnUiThread(() -> {
-                                    String passedName = passedPlayer.equals(myColor) ? "あなた" : "相手";
-                                    Toast.makeText(OnlineGameActivity.this,
-                                            passedName + "は置ける場所がありません", Toast.LENGTH_SHORT).show();
-                                });
-                            }
                         }
 
                         @Override
@@ -223,11 +224,12 @@ public class OnlineGameActivity extends AppCompatActivity {
             othelloView.applyBoardState(state.board, state.currentTurn);
         }
 
-        // パス通知を表示（相手の手を受信した時のみ）
-        if (opponentMoved && state.passedPlayer != null) {
+        // パス通知を表示（passedPlayerが新しく設定された場合）
+        if (state.passedPlayer != null && !state.passedPlayer.equals(lastPassedPlayer)) {
             String passedName = state.passedPlayer.equals(myColor) ? "あなた" : "相手";
             Toast.makeText(this, passedName + "は置ける場所がありません", Toast.LENGTH_SHORT).show();
         }
+        lastPassedPlayer = state.passedPlayer;
 
         // UI更新
         updateTurnDisplay(state.currentTurn);
