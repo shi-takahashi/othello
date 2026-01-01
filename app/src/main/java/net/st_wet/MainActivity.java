@@ -25,10 +25,12 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import net.st_wet.model.Cell;
+import net.st_wet.model.Cell.E_STATUS;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
@@ -39,6 +41,15 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAnalytics mFirebaseAnalytics;
     private boolean mShouldSaveOnPause = false;  // 中断ボタンが押された場合のみtrue
     private boolean mNeedsRestore = true;  // onCreate後の初回onResumeでのみ復元処理を行う
+
+    // プレイヤー情報表示用
+    private TextView txtMyColor;
+    private TextView txtOpponentColor;
+    private TextView txtMyCount;
+    private TextView txtOpponentCount;
+    private TextView txtTurnStatus;
+    private LinearLayout layoutMyInfo;
+    private LinearLayout layoutOpponentInfo;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -212,8 +223,63 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        // プレイヤー情報表示の初期化
+        txtMyColor = findViewById(R.id.txtMyColor);
+        txtOpponentColor = findViewById(R.id.txtOpponentColor);
+        txtMyCount = findViewById(R.id.txtMyCount);
+        txtOpponentCount = findViewById(R.id.txtOpponentCount);
+        txtTurnStatus = findViewById(R.id.txtTurnStatus);
+        layoutMyInfo = findViewById(R.id.layoutMyInfo);
+        layoutOpponentInfo = findViewById(R.id.layoutOpponentInfo);
+
+        // OthelloViewのスコア変更リスナーを設定
+        OthelloView othelloView = findViewById(R.id.othelloView);
+        othelloView.setOnScoreChangeListener((blackCount, whiteCount, currentTurn) -> {
+            updateScoreDisplay(blackCount, whiteCount, currentTurn);
+        });
+
         // 初回起動時の説明ダイアログを表示
         showFirstLaunchGuide();
+    }
+
+    private void updateScoreDisplay(int blackCount, int whiteCount, E_STATUS currentTurn) {
+        OthelloView othelloView = findViewById(R.id.othelloView);
+        E_STATUS myTurn = othelloView.getMyTurn();
+
+        // 現在のレベルを取得
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        int level = pref.getInt("level", 2);
+        String levelStr = "Lv." + level;
+
+        // 自分と相手のカウントを設定
+        if (myTurn == E_STATUS.Black) {
+            txtMyColor.setText("あなた (黒)");
+            txtOpponentColor.setText(levelStr + " (白)");
+            txtMyCount.setText(String.valueOf(blackCount));
+            txtOpponentCount.setText(String.valueOf(whiteCount));
+        } else {
+            txtMyColor.setText("あなた (白)");
+            txtOpponentColor.setText(levelStr + " (黒)");
+            txtMyCount.setText(String.valueOf(whiteCount));
+            txtOpponentCount.setText(String.valueOf(blackCount));
+        }
+
+        // ターン表示を更新
+        // currentTurnは「今からプレイする人」を示す
+        boolean isMyTurn = (currentTurn == myTurn);
+        if (currentTurn == E_STATUS.None) {
+            txtTurnStatus.setText("ゲーム終了");
+            layoutMyInfo.setBackgroundResource(R.drawable.bg_player_inactive);
+            layoutOpponentInfo.setBackgroundResource(R.drawable.bg_player_inactive);
+        } else if (isMyTurn) {
+            txtTurnStatus.setText("あなたのターンです");
+            layoutMyInfo.setBackgroundResource(R.drawable.bg_player_active);
+            layoutOpponentInfo.setBackgroundResource(R.drawable.bg_player_inactive);
+        } else {
+            txtTurnStatus.setText("CPUのターンです");
+            layoutMyInfo.setBackgroundResource(R.drawable.bg_player_inactive);
+            layoutOpponentInfo.setBackgroundResource(R.drawable.bg_player_active);
+        }
     }
 
     /**
@@ -506,8 +572,11 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        // レベル表示を更新（ハンデ設定後に呼ぶ）
-        updateLevelDisplay(level);
+        // ハンデ表示を更新（ハンデ設定後に呼ぶ）
+        updateHandicapDisplay();
+
+        // 初期スコア表示を更新
+        updateScoreDisplay(othelloView.getBlackCount(), othelloView.getWhiteCount(), othelloView.getCurrentTurn());
     }
 
     public boolean getFirst() {
@@ -597,20 +666,45 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * レベル表示を更新
-     * @param level レベル (1, 2, 3)
+     * モードラベルとハンデ表示を更新
      */
-    private void updateLevelDisplay(int level) {
-        TextView txtLevel = findViewById(R.id.txtLevel);
+    private void updateHandicapDisplay() {
+        TextView txtModeLabel = findViewById(R.id.txtModeLabel);
+        TextView txtHandicap = findViewById(R.id.txtHandicap);
         OthelloView othelloView = findViewById(R.id.othelloView);
 
-        String text = "Lv." + level;
+        // vsの下のモードラベル表示
         if (othelloView.isRandomMode()) {
-            text += " (ランダム)";
+            txtModeLabel.setText("(ランダム)");
+            txtModeLabel.setVisibility(View.VISIBLE);
         } else if (othelloView.isHandicapEnabled()) {
-            text += " (ハンデ)";
+            txtModeLabel.setText("(ハンデ)");
+            txtModeLabel.setVisibility(View.VISIBLE);
+        } else {
+            txtModeLabel.setVisibility(View.GONE);
         }
-        txtLevel.setText(text);
+
+        // 盤面左下のハンデ詳細表示
+        if (othelloView.isHandicapEnabled()) {
+            int target = othelloView.getHandicapTarget();
+            int count = othelloView.getHandicapCount();
+
+            // ハンデ対象を表示
+            String targetStr;
+            if (target == 1) {
+                // 自分にハンデ
+                targetStr = "あなた";
+            } else {
+                // 相手にハンデ
+                targetStr = "CPU";
+            }
+
+            String text = "ハンデ: " + targetStr + "の角に" + count + "個";
+            txtHandicap.setText(text);
+            txtHandicap.setVisibility(View.VISIBLE);
+        } else {
+            txtHandicap.setVisibility(View.GONE);
+        }
     }
 
     /**

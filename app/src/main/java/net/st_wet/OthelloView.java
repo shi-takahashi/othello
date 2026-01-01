@@ -163,29 +163,6 @@ public class OthelloView extends View
             }
         }
 
-        // 個数（オンラインモードでは非表示）
-        if (!mOnlineMode) {
-//        TextView txt_stone = ((MainActivity)getContext()).findViewById(R.id.txtStone);
-//        if (txt_stone != null) {
-            String text = " 黒" + String.format("%2d", mBoard.getStatusCount(E_STATUS.Black))
-                    + "  白" + String.format("%2d", mBoard.getStatusCount(E_STATUS.White));
-//            txt_stone.setText(text);
-            mPaint.setColor(Color.BLACK);
-            mPaint.setTextSize(toDimensionTextSize(getContext(), 18.0f));
-            float x = 0;
-            float y = (Board.ROWS * mBoard.getCellHeidht()) + (mBoard.getCellHeidht() / 2f);
-            canvas.drawText(text, x, y, mPaint);
-//        }
-
-            // ハンデ情報
-            if (mHandicapTarget != 0) {
-                String target = (mHandicapTarget == 1) ? "自分" : "相手";
-                String handicapText = " ハンデ: " + target + "に角" + mHandicapCount + "つ";
-                mPaint.setTextSize(toDimensionTextSize(getContext(), 14.0f));
-                float handicapY = y + (mBoard.getCellHeidht() / 2f);
-                canvas.drawText(handicapText, x, handicapY, mPaint);
-            }
-        }
     }
 
     /**
@@ -315,6 +292,8 @@ public class OthelloView extends View
                 nextTurn = (mBoard.getTurn() == E_STATUS.Black) ? "black" : "white";
             }
 
+            notifyScoreChanged();
+
             final int moveR = mR;
             final int moveC = mC;
             final String boardState = getCellsStatus();
@@ -335,6 +314,7 @@ public class OthelloView extends View
         if (!mBoard.isCanPutAll(mBoard.getOppositeTurn())) {
             if (!mBoard.isCanPutAll(mBoard.getTurn())) {
                 gameSet();
+                notifyScoreChanged();
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -342,7 +322,8 @@ public class OthelloView extends View
                     }
                 });
             } else {
-                // 相手が置く場所がない
+                // 相手が置く場所がない（パス）- ターンは変わらない
+                notifyScoreChanged();
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -353,6 +334,7 @@ public class OthelloView extends View
             }
         } else {
             mBoard.changeTurn();
+            notifyScoreChanged();
         }
     }
 
@@ -457,6 +439,7 @@ public class OthelloView extends View
         mBoard.setTurn(E_STATUS.Black);
 
         mBoard.countCell();
+        notifyScoreChanged();
     }
 
     /**
@@ -644,6 +627,40 @@ public class OthelloView extends View
         this.mRandomMode = randomMode;
     }
 
+    // ===== スコア取得用メソッド =====
+
+    public int getBlackCount() {
+        return mBoard.getStatusCount(E_STATUS.Black);
+    }
+
+    public int getWhiteCount() {
+        return mBoard.getStatusCount(E_STATUS.White);
+    }
+
+    public E_STATUS getMyTurn() {
+        return mMyTurn;
+    }
+
+    // スコア変更リスナー
+    public interface OnScoreChangeListener {
+        void onScoreChanged(int blackCount, int whiteCount, E_STATUS currentTurn);
+    }
+
+    private OnScoreChangeListener mOnScoreChangeListener = null;
+
+    public void setOnScoreChangeListener(OnScoreChangeListener listener) {
+        this.mOnScoreChangeListener = listener;
+    }
+
+    private void notifyScoreChanged() {
+        if (mOnScoreChangeListener != null) {
+            int black = mBoard.getStatusCount(E_STATUS.Black);
+            int white = mBoard.getStatusCount(E_STATUS.White);
+            E_STATUS turn = mBoard.getTurn();
+            mHandler.post(() -> mOnScoreChangeListener.onScoreChanged(black, white, turn));
+        }
+    }
+
     // ===== オンラインモード用メソッド =====
 
     public void setOnlineMode(boolean onlineMode) {
@@ -744,6 +761,7 @@ public class OthelloView extends View
         }
 
         mBoard.countCell();
+        notifyScoreChanged();
 
         mHandler.post(new Runnable() {
             @Override
@@ -782,6 +800,7 @@ public class OthelloView extends View
         }
 
         mBoard.countCell();
+        notifyScoreChanged();
         invalidate();
     }
 
@@ -902,6 +921,7 @@ public class OthelloView extends View
         }
 
         mBoard.countCell();
+        notifyScoreChanged();
 
         invalidate();
     }
@@ -926,6 +946,7 @@ public class OthelloView extends View
         }
 
         mBoard.countCell();
+        notifyScoreChanged();
 
         invalidate();
     }
