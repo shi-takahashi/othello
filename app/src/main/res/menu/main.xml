@@ -2,6 +2,10 @@
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
+        android:id="@+id/menu_friends"
+        android:icon="@drawable/ic_menu_friends"
+        android:title="友達対戦" />
+    <item
         android:id="@+id/menu_help"
         android:icon="@drawable/ic_menu_help"
         android:title="ヘルプ" />

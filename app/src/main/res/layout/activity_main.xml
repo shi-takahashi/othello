@@ -59,15 +59,24 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/txtLevel"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"
-            android:gravity="center"
-            android:text="Lv.1" />
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/txtLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
+                android:gravity="start"
+                android:text="Lv.1" />
+
+        </LinearLayout>
 
         <RelativeLayout
             android:layout_width="wrap_content"

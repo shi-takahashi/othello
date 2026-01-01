@@ -43,9 +43,19 @@ public class OthelloView extends View
     private SoundPool mSoundPool;
     private int mSoundIdPut;
     private boolean mSoundEnabled = true;
+    private boolean mSoundLoaded = false;
     private int mHandicapTarget = 0;  // 0=なし, 1=自分, 2=相手
     private int mHandicapCount = 1;   // 1〜4
     private boolean mRandomMode = false;  // ランダムモード
+
+    // オンライン対戦用
+    private boolean mOnlineMode = false;
+    private E_STATUS mOnlineTurn = E_STATUS.None;  // オンラインでの自分の色
+    private OnMoveListener mOnMoveListener = null;
+
+    public interface OnMoveListener {
+        void onMove(int row, int col, String boardState, String currentTurn, String passedPlayer);
+    }
 
     public OthelloView(Context context, AttributeSet atr) {
         super(context, atr);
@@ -66,6 +76,11 @@ public class OthelloView extends View
                 .setMaxStreams(2)
                 .setAudioAttributes(audioAttributes)
                 .build();
+        mSoundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
+            if (status == 0) {
+                mSoundLoaded = true;
+            }
+        });
         mSoundIdPut = mSoundPool.load(context, R.raw.stone_put, 1);
     }
 
@@ -135,7 +150,8 @@ public class OthelloView extends View
         }
 
         // 候補
-        if (mBoard.getTurn() == mMyTurn && !mLock) {
+        E_STATUS myTurnForDisplay = mOnlineMode ? mOnlineTurn : mMyTurn;
+        if (mBoard.getTurn() == myTurnForDisplay && !mLock) {
             mPaint.setColor(Color.BLACK);
             mPaint.setAlpha(32);
             ArrayList<HashMap> list = mBoard.getCanPutRCs(mBoard.getTurn());
@@ -147,7 +163,8 @@ public class OthelloView extends View
             }
         }
 
-        // 個数
+        // 個数（オンラインモードでは非表示）
+        if (!mOnlineMode) {
 //        TextView txt_stone = ((MainActivity)getContext()).findViewById(R.id.txtStone);
 //        if (txt_stone != null) {
             String text = " 黒" + String.format("%2d", mBoard.getStatusCount(E_STATUS.Black))
@@ -160,13 +177,14 @@ public class OthelloView extends View
             canvas.drawText(text, x, y, mPaint);
 //        }
 
-        // ハンデ情報
-        if (mHandicapTarget != 0) {
-            String target = (mHandicapTarget == 1) ? "自分" : "相手";
-            String handicapText = " ハンデ: " + target + "に角" + mHandicapCount + "つ";
-            mPaint.setTextSize(toDimensionTextSize(getContext(), 14.0f));
-            float handicapY = y + (mBoard.getCellHeidht() / 2f);
-            canvas.drawText(handicapText, x, handicapY, mPaint);
+            // ハンデ情報
+            if (mHandicapTarget != 0) {
+                String target = (mHandicapTarget == 1) ? "自分" : "相手";
+                String handicapText = " ハンデ: " + target + "に角" + mHandicapCount + "つ";
+                mPaint.setTextSize(toDimensionTextSize(getContext(), 14.0f));
+                float handicapY = y + (mBoard.getCellHeidht() / 2f);
+                canvas.drawText(handicapText, x, handicapY, mPaint);
+            }
         }
     }
 
@@ -192,8 +210,15 @@ public class OthelloView extends View
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (mBoard.getTurn() != mMyTurn) {
-            return false;
+        // オンラインモードの場合
+        if (mOnlineMode) {
+            if (mBoard.getTurn() != mOnlineTurn) {
+                return false;  // 相手のターン中は操作不可
+            }
+        } else {
+            if (mBoard.getTurn() != mMyTurn) {
+                return false;
+            }
         }
 
         float x = event.getX();
@@ -236,7 +261,7 @@ public class OthelloView extends View
 
     public void putStone() {
         // 石を置く音を再生
-        if (mSoundEnabled) {
+        if (mSoundEnabled && mSoundLoaded) {
             mSoundPool.play(mSoundIdPut, 1.0f, 1.0f, 0, 0, 1.0f);
         }
 
@@ -269,6 +294,43 @@ public class OthelloView extends View
                 invalidate();
             }
         });
+
+        // オンラインモードの場合はコールバックを呼び出す
+        if (mOnlineMode && mOnMoveListener != null) {
+            String nextTurn = "black";
+            boolean gameEnded = false;
+            String passedPlayer = null;
+
+            if (!mBoard.isCanPutAll(mBoard.getOppositeTurn())) {
+                if (!mBoard.isCanPutAll(mBoard.getTurn())) {
+                    gameEnded = true;
+                    nextTurn = "none";
+                } else {
+                    // 相手がパスの場合は自分のターン継続（ターン変更しない）
+                    passedPlayer = (mBoard.getOppositeTurn() == E_STATUS.Black) ? "black" : "white";
+                    nextTurn = (mBoard.getTurn() == E_STATUS.Black) ? "black" : "white";
+                }
+            } else {
+                mBoard.changeTurn();
+                nextTurn = (mBoard.getTurn() == E_STATUS.Black) ? "black" : "white";
+            }
+
+            final int moveR = mR;
+            final int moveC = mC;
+            final String boardState = getCellsStatus();
+            final String finalNextTurn = nextTurn;
+            final boolean finalGameEnded = gameEnded;
+            final String finalPassedPlayer = passedPlayer;
+
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mOnMoveListener.onMove(moveR, moveC, boardState, finalNextTurn, finalPassedPlayer);
+                    // 結果表示はOnlineGameActivityに任せる
+                }
+            });
+            return;
+        }
 
         if (!mBoard.isCanPutAll(mBoard.getOppositeTurn())) {
             if (!mBoard.isCanPutAll(mBoard.getTurn())) {
@@ -582,6 +644,218 @@ public class OthelloView extends View
         this.mRandomMode = randomMode;
     }
 
+    // ===== オンラインモード用メソッド =====
+
+    public void setOnlineMode(boolean onlineMode) {
+        this.mOnlineMode = onlineMode;
+        if (onlineMode) {
+            // オンラインモード時はCPUを無効化
+            if (mCpu != null) {
+                mCpu.setTurn(E_STATUS.None);
+            }
+        }
+    }
+
+    public boolean isOnlineMode() {
+        return this.mOnlineMode;
+    }
+
+    public void setOnlineTurn(E_STATUS turn) {
+        this.mOnlineTurn = turn;
+    }
+
+    public E_STATUS getOnlineTurn() {
+        return this.mOnlineTurn;
+    }
+
+    public void setOnMoveListener(OnMoveListener listener) {
+        this.mOnMoveListener = listener;
+    }
+
+    /**
+     * オンライン対戦用：外部から石を置く（相手の手を反映）
+     * @param row 行
+     * @param col 列
+     * @param nextTurn 次のターン ("black" or "white")
+     */
+    public void putStoneAt(int row, int col, String nextTurn) {
+        mR = row;
+        mC = col;
+
+        if (!mBoard.isCanPut(mBoard.getTurn(), mR, mC)) {
+            return;
+        }
+
+        mLock = true;
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                putStoneOnline();
+
+                // ターン変更
+                if ("black".equals(nextTurn)) {
+                    mBoard.setTurn(E_STATUS.Black);
+                } else if ("white".equals(nextTurn)) {
+                    mBoard.setTurn(E_STATUS.White);
+                } else {
+                    mBoard.setTurn(E_STATUS.None);
+                }
+
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        invalidate();
+                    }
+                });
+
+                mLock = false;
+            }
+        }).start();
+    }
+
+    /**
+     * オンライン対戦用：石を置く処理（コールバックなし、盤面更新のみ）
+     */
+    private void putStoneOnline() {
+        if (mSoundEnabled && mSoundLoaded) {
+            mSoundPool.play(mSoundIdPut, 1.0f, 1.0f, 0, 0, 1.0f);
+        }
+
+        mBoard.changeCell(mR, mC);
+
+        mHistory += String.valueOf(mBoard.getTurn().ordinal());
+        mHistory += String.valueOf(mR);
+        mHistory += String.valueOf(mC);
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                invalidate();
+            }
+        });
+
+        Thread turnOverThread = new TunrOver(mBoard.turnOverCells(mBoard.getTurn(), mR, mC, true));
+        turnOverThread.start();
+        try {
+            turnOverThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        mBoard.countCell();
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                invalidate();
+            }
+        });
+    }
+
+    /**
+     * オンライン対戦用：盤面状態を適用
+     */
+    public void applyBoardState(String boardState, String currentTurn) {
+        E_STATUS[] statuses = E_STATUS.values();
+
+        // 現在のターンを設定
+        if ("black".equals(currentTurn)) {
+            mBoard.setTurn(E_STATUS.Black);
+        } else if ("white".equals(currentTurn)) {
+            mBoard.setTurn(E_STATUS.White);
+        } else {
+            mBoard.setTurn(E_STATUS.None);
+        }
+
+        // 盤面を適用
+        Cell[][] cells = mBoard.getCells();
+        int i = 0;
+        for (int r = 0; r < mBoard.ROWS; r++) {
+            for (int c = 0; c < mBoard.COLS; c++) {
+                String s_sts = boardState.substring(i, i + 1);
+                int i_sts = Integer.parseInt(s_sts);
+                E_STATUS e_sts = statuses[i_sts];
+                cells[r][c].setStatus(e_sts);
+                i++;
+            }
+        }
+
+        mBoard.countCell();
+        invalidate();
+    }
+
+    /**
+     * オンライン対戦用：ゲーム初期化
+     */
+    public void restartOnline(String myColor) {
+        mOnlineMode = true;
+        mOnlineTurn = "black".equals(myColor) ? E_STATUS.Black : E_STATUS.White;
+        mBoard.reset();
+        mHistory = "";
+        mbUseBack = false;
+
+        // CPUを無効化
+        if (mCpu != null) {
+            mCpu.setTurn(E_STATUS.None);
+        }
+
+        invalidate();
+    }
+
+    /**
+     * オンライン対戦用：結果表示
+     */
+    public void showOnlineResult() {
+        int count_black = mBoard.getStatusCount(E_STATUS.Black);
+        int count_white = mBoard.getStatusCount(E_STATUS.White);
+
+        String message = "";
+        if (mOnlineTurn == E_STATUS.Black) {
+            if (count_black > count_white) {
+                message = "勝ち";
+            } else if (count_black < count_white) {
+                message = "負け";
+            } else {
+                message = "引き分け";
+            }
+        } else {
+            if (count_black < count_white) {
+                message = "勝ち";
+            } else if (count_black > count_white) {
+                message = "負け";
+            } else {
+                message = "引き分け";
+            }
+        }
+        message += System.lineSeparator();
+        message += " (" + "黒 " + count_black + " vs " + "白 " + count_white + ") ";
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("対戦結果")
+                .setMessage(message)
+                .setPositiveButton("閉じる", null)
+                .show();
+    }
+
+    /**
+     * オンライン対戦用：勝者を取得
+     */
+    public String getWinner() {
+        int count_black = mBoard.getStatusCount(E_STATUS.Black);
+        int count_white = mBoard.getStatusCount(E_STATUS.White);
+
+        if (count_black > count_white) {
+            return "black";
+        } else if (count_black < count_white) {
+            return "white";
+        } else {
+            return "draw";
+        }
+    }
+
+    // ===== オンラインモード用メソッド ここまで =====
+
     public void back() {
         // 対局終了後は待ったを使えないようにする
         if (mBoard.getTurn() == E_STATUS.None) {
@@ -719,6 +993,11 @@ public class OthelloView extends View
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+
+                // オンラインモードではCPUは動作しない
+                if (mOnlineMode) {
+                    continue;
                 }
 
                 // 自分のターンでなければ何もしない

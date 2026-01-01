@@ -40,6 +40,14 @@
             android:screenOrientation="portrait"
             android:theme="@style/SettingTheme">
         </activity>
+        <activity
+            android:name=".OnlineLobbyActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".OnlineGameActivity"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>

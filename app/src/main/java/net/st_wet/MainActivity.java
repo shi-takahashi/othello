@@ -289,6 +289,8 @@ public class MainActivity extends AppCompatActivity
                     restart();
                 } else if (itemId == R.id.menu_end) {
                     end();
+                } else if (itemId == R.id.menu_friends) {
+                    startOnlineGame();
                 }
                 return false;
             }
@@ -297,6 +299,11 @@ public class MainActivity extends AppCompatActivity
 
     public void showHelp() {
         Intent intent = new Intent(this, HelpActivity.class);
+        startActivity(intent);
+    }
+
+    public void startOnlineGame() {
+        Intent intent = new Intent(this, OnlineLobbyActivity.class);
         startActivity(intent);
     }
 
