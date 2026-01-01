@@ -48,6 +48,7 @@ public class OthelloView extends View
     private int mHandicapCount = 1;   // 1〜4
     private boolean mRandomMode = false;  // ランダムモード
     private String mInitialBoardState = null;  // 初期盤面状態（待った用）
+    private volatile int mGameVersion = 0;  // ゲームバージョン（リスタート検出用）
 
     // オンライン対戦用
     private boolean mOnlineMode = false;
@@ -340,6 +341,11 @@ public class OthelloView extends View
     }
 
     public void restart() {
+        // ゲームバージョンをインクリメント（CPUの古い思考結果を無効化）
+        mGameVersion++;
+        // ロックを解除（CPUの思考中でもリスタート後は操作可能にする）
+        mLock = false;
+
         if (mRandomMode) {
             // ランダムモード：ランダムな配置で開始
             setupRandomBoard();
@@ -352,6 +358,8 @@ public class OthelloView extends View
                 actualHandicapTarget = (mHandicapTarget == 1) ? 2 : 1;
             }
             mBoard.reset(actualHandicapTarget, mHandicapCount);
+            mBoard.countCell();
+            notifyScoreChanged();
         }
         // 初期盤面を保存（待った機能用）
         mInitialBoardState = getCellsStatus();
@@ -1050,6 +1058,9 @@ public class OthelloView extends View
 
                 mLock = true;
 
+                // 思考開始時のゲームバージョンを記憶
+                int gameVersionAtStart = mGameVersion;
+
                 long start = System.currentTimeMillis();
 
                 if (mDepth == 1) {
@@ -1096,6 +1107,12 @@ public class OthelloView extends View
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
+
+                // ゲームがリスタートされていたら、この思考結果は破棄
+                if (gameVersionAtStart != mGameVersion) {
+                    mLock = false;
+                    continue;
                 }
 
                 putStone();
