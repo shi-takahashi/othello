@@ -47,6 +47,7 @@ public class OthelloView extends View
     private int mHandicapTarget = 0;  // 0=なし, 1=自分, 2=相手
     private int mHandicapCount = 1;   // 1〜4
     private boolean mRandomMode = false;  // ランダムモード
+    private String mInitialBoardState = null;  // 初期盤面状態（待った用）
 
     // オンライン対戦用
     private boolean mOnlineMode = false;
@@ -352,6 +353,8 @@ public class OthelloView extends View
             }
             mBoard.reset(actualHandicapTarget, mHandicapCount);
         }
+        // 初期盤面を保存（待った機能用）
+        mInitialBoardState = getCellsStatus();
         mHistory = "";
         mbUseBack = false;
         invalidate();
@@ -906,7 +909,22 @@ public class OthelloView extends View
     public void replay() {
         E_STATUS[] statuses = E_STATUS.values();
 
-        mBoard.reset();
+        // 保存された初期盤面から復元（ランダムモード・ハンデ対応）
+        if (mInitialBoardState != null) {
+            Cell[][] cells = mBoard.getCells();
+            int idx = 0;
+            for (int r = 0; r < mBoard.ROWS; r++) {
+                for (int c = 0; c < mBoard.COLS; c++) {
+                    String s_sts = mInitialBoardState.substring(idx, idx + 1);
+                    int i_sts = Integer.parseInt(s_sts);
+                    cells[r][c].setStatus(statuses[i_sts]);
+                    idx++;
+                }
+            }
+            mBoard.setTurn(E_STATUS.Black);  // 初期ターンは黒
+        } else {
+            mBoard.reset();
+        }
 
         if (mHistory.length() > 0) {
             for (int i = 0; i < mHistory.length(); i = i + 3) {
