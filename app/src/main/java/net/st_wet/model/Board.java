@@ -335,9 +335,11 @@ public class Board implements Cloneable
             }
         }
 
-        // 着手可能数による評価
-//        ArrayList<HashMap> list = getCanPutRCs(getTurn());
-//        score = list.size();
+        // 着手可能数（Mobility）による評価
+        E_STATUS oppStatus = Cell.getOppositeStatus(status);
+        int myMobility = getCanPutRCs(status).size();
+        int oppMobility = getCanPutRCs(oppStatus).size();
+        score += (myMobility - oppMobility) * 20;
 
         return score;
     }
