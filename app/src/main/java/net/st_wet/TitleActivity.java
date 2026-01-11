@@ -78,6 +78,7 @@ public class TitleActivity extends AppCompatActivity {
         SwitchMaterial switchRandomMode = dialogView.findViewById(R.id.switchRandomMode);
         SwitchMaterial switchReturnable = dialogView.findViewById(R.id.switchReturnable);
         CheckBox checkDontShowAgain = dialogView.findViewById(R.id.checkDontShowAgain);
+        MaterialButton btnStart = dialogView.findViewById(R.id.btnStart);
 
         // 現在の設定を反映
         // レベル
@@ -145,54 +146,56 @@ public class TitleActivity extends AppCompatActivity {
             }
         });
 
-        // ダイアログを表示
+        // ダイアログを作成
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("対局設定")
                 .setView(dialogView)
-                .setPositiveButton("開始", (d, which) -> {
-                    // 設定を取得
-                    int level = 2;
-                    int levelCheckedId = levelToggleGroup.getCheckedButtonId();
-                    if (levelCheckedId == R.id.level1) level = 1;
-                    else if (levelCheckedId == R.id.level3) level = 3;
-
-                    boolean isFirst = tebanToggleGroup.getCheckedButtonId() == R.id.black;
-
-                    int handicapTarget = 0;
-                    int handicapTargetCheckedId = handicapTargetToggleGroup.getCheckedButtonId();
-                    if (handicapTargetCheckedId == R.id.handicapPlayer) handicapTarget = 1;
-                    else if (handicapTargetCheckedId == R.id.handicapCpu) handicapTarget = 2;
-
-                    int handicapCount = 1;
-                    int handicapCountCheckedId = handicapCountToggleGroup.getCheckedButtonId();
-                    if (handicapCountCheckedId == R.id.handicapCount2) handicapCount = 2;
-                    else if (handicapCountCheckedId == R.id.handicapCount3) handicapCount = 3;
-                    else if (handicapCountCheckedId == R.id.handicapCount4) handicapCount = 4;
-
-                    boolean isRandomMode = switchRandomMode.isChecked();
-                    boolean isReturnable = switchReturnable.isChecked();
-                    boolean dontShowAgain = checkDontShowAgain.isChecked();
-
-                    // SharedPreferencesに保存
-                    SharedPreferences.Editor editor = pref.edit();
-                    editor.putInt("level", level);
-                    editor.putBoolean("first", isFirst);
-                    editor.putInt("handicapTarget", handicapTarget);
-                    editor.putInt("handicapCount", handicapCount);
-                    editor.putBoolean("randomMode", isRandomMode);
-                    editor.putBoolean("returnable", isReturnable);
-                    editor.putBoolean(PREF_SKIP_QUICK_SETTINGS, dontShowAgain);
-                    // 設定が変わったので対局状態をクリア
-                    editor.remove("currentTurn");
-                    editor.remove("cellsStatus");
-                    editor.remove("history");
-                    editor.remove("useBack");
-                    editor.apply();
-
-                    startCpuBattle();
-                })
-                .setNegativeButton("キャンセル", null)
                 .create();
+
+        // 開始ボタンのクリックリスナー
+        btnStart.setOnClickListener(v -> {
+            // 設定を取得
+            int level = 2;
+            int levelCheckedId = levelToggleGroup.getCheckedButtonId();
+            if (levelCheckedId == R.id.level1) level = 1;
+            else if (levelCheckedId == R.id.level3) level = 3;
+
+            boolean isFirst = tebanToggleGroup.getCheckedButtonId() == R.id.black;
+
+            int handicapTarget = 0;
+            int handicapTargetCheckedId = handicapTargetToggleGroup.getCheckedButtonId();
+            if (handicapTargetCheckedId == R.id.handicapPlayer) handicapTarget = 1;
+            else if (handicapTargetCheckedId == R.id.handicapCpu) handicapTarget = 2;
+
+            int handicapCount = 1;
+            int handicapCountCheckedId = handicapCountToggleGroup.getCheckedButtonId();
+            if (handicapCountCheckedId == R.id.handicapCount2) handicapCount = 2;
+            else if (handicapCountCheckedId == R.id.handicapCount3) handicapCount = 3;
+            else if (handicapCountCheckedId == R.id.handicapCount4) handicapCount = 4;
+
+            boolean isRandomMode = switchRandomMode.isChecked();
+            boolean isReturnable = switchReturnable.isChecked();
+            boolean dontShowAgain = checkDontShowAgain.isChecked();
+
+            // SharedPreferencesに保存
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putInt("level", level);
+            editor.putBoolean("first", isFirst);
+            editor.putInt("handicapTarget", handicapTarget);
+            editor.putInt("handicapCount", handicapCount);
+            editor.putBoolean("randomMode", isRandomMode);
+            editor.putBoolean("returnable", isReturnable);
+            editor.putBoolean(PREF_SKIP_QUICK_SETTINGS, dontShowAgain);
+            // 設定が変わったので対局状態をクリア
+            editor.remove("currentTurn");
+            editor.remove("cellsStatus");
+            editor.remove("history");
+            editor.remove("useBack");
+            editor.apply();
+
+            dialog.dismiss();
+            startCpuBattle();
+        });
 
         dialog.show();
     }

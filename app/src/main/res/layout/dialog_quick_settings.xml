@@ -281,14 +281,23 @@
 
         </LinearLayout>
 
+        <!-- 開始ボタン -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStart"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:text="開始"
+            android:textSize="18sp"
+            app:cornerRadius="12dp" />
+
         <!-- 次回から表示しない -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingTop="12dp"
-            android:background="@drawable/divider_top">
+            android:paddingTop="12dp">
 
             <CheckBox
                 android:id="@+id/checkDontShowAgain"
