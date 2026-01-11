@@ -322,6 +322,35 @@ public class FirestoreGameManager {
         return currentRoomCode;
     }
 
+    /**
+     * 盤面をリセットして再戦（同じ条件で）
+     */
+    public void resetForRematch(String newBoard, OnUpdateListener listener) {
+        if (currentRoomCode == null) {
+            if (listener != null) listener.onFailure("ルームに接続していません");
+            return;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("board", newBoard);
+        updates.put("currentTurn", "black");
+        updates.put("status", "playing");
+        updates.put("lastMoveRow", null);
+        updates.put("lastMoveCol", null);
+        updates.put("winner", null);
+        updates.put("passedPlayer", null);
+        updates.put("updatedAt", FieldValue.serverTimestamp());
+
+        db.collection(COLLECTION_GAMES).document(currentRoomCode)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    if (listener != null) listener.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onFailure(e.getMessage());
+                });
+    }
+
     public boolean isMyTurn(GameState state) {
         if (state == null) return false;
         if (deviceId.equals(state.playerBlack)) {

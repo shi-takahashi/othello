@@ -47,6 +47,7 @@ public class OnlineGameActivity extends AppCompatActivity {
     private Integer lastAppliedMoveRow = null;
     private Integer lastAppliedMoveCol = null;
     private String lastPassedPlayer = null;  // 前回のパス状態を記録
+    private AlertDialog resultDialog = null;  // 結果ダイアログ（リマッチ時に閉じるため）
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,9 +190,12 @@ public class OnlineGameActivity extends AppCompatActivity {
             @Override
             public void onOpponentLeft() {
                 runOnUiThread(() -> {
-                    if (!gameEnded) {
-                        showOpponentLeftDialog();
+                    // 結果ダイアログが表示されていたら閉じる
+                    if (resultDialog != null && resultDialog.isShowing()) {
+                        resultDialog.dismiss();
+                        resultDialog = null;
                     }
+                    showOpponentLeftDialog();
                 });
             }
 
@@ -219,12 +223,27 @@ public class OnlineGameActivity extends AppCompatActivity {
             updateGameModeDisplay();
         }
 
+        // 相手がリマッチを開始した場合（ゲーム終了後にplaying状態に戻った）
+        if (gameEnded && "playing".equals(state.status) && state.lastMoveRow == null) {
+            Log.d(TAG, "Rematch started by opponent!");
+            runOnUiThread(() -> {
+                // 結果ダイアログが表示されていたら閉じる
+                if (resultDialog != null && resultDialog.isShowing()) {
+                    resultDialog.dismiss();
+                    resultDialog = null;
+                }
+                resetGameState();
+                othelloView.applyBoardState(state.board, state.currentTurn);
+                updateScoreDisplay(state.board);
+            });
+            return;
+        }
+
         // ゲーム終了判定を先に行う（確実に実行されるように）
         if ("finished".equals(state.status) && !gameEnded) {
             gameEnded = true;
             Log.d(TAG, "Game finished! winner=" + state.winner);
-            // これ以上の状態更新を受け取らないようにリスナーを停止
-            gameManager.stopListening();
+            // リスナーは停止しない（相手のリマッチ要求を検知するため）
 
             // 相手の最後の手を反映してから結果を表示
             if (state.lastMoveRow != null && state.lastMoveCol != null) {
@@ -343,19 +362,72 @@ public class OnlineGameActivity extends AppCompatActivity {
             message = "負けました...";
         }
 
-        new AlertDialog.Builder(this)
+        resultDialog = new AlertDialog.Builder(this)
                 .setTitle("ゲーム終了")
                 .setMessage(message)
-                .setPositiveButton("閉じる", (dialog, which) -> finish())
+                .setPositiveButton("終わる", (dialog, which) -> leaveGame())
+                .setNegativeButton("もう1回", (dialog, which) -> startRematch())
                 .setCancelable(false)
-                .show();
+                .create();
+        resultDialog.show();
+    }
+
+    private void startRematch() {
+        // ダイアログを閉じる
+        if (resultDialog != null && resultDialog.isShowing()) {
+            resultDialog.dismiss();
+            resultDialog = null;
+        }
+
+        // 新しい初期盤面を生成
+        String newBoard;
+        if (isRandomMode) {
+            // ランダムモード: 新しいランダム盤面を生成
+            OthelloView tempView = new OthelloView(this, null);
+            newBoard = tempView.generateRandomBoardString();
+        } else if (handicapTarget != 0) {
+            // ハンデモード: 同じ設定でハンデ付き盤面
+            newBoard = FirestoreGameManager.getInitialBoardWithHandicap(handicapTarget, handicapCount);
+        } else {
+            // 通常モード
+            newBoard = FirestoreGameManager.getInitialBoardWithHandicap(0, 0);
+        }
+
+        // Firestoreに盤面をリセット
+        gameManager.resetForRematch(newBoard, new FirestoreGameManager.OnUpdateListener() {
+            @Override
+            public void onSuccess() {
+                runOnUiThread(() -> {
+                    // ゲーム状態をリセット
+                    resetGameState();
+                });
+            }
+
+            @Override
+            public void onFailure(String error) {
+                runOnUiThread(() -> {
+                    Toast.makeText(OnlineGameActivity.this,
+                            "再戦に失敗しました: " + error, Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+            }
+        });
+    }
+
+    private void resetGameState() {
+        gameEnded = false;
+        lastAppliedMoveRow = null;
+        lastAppliedMoveCol = null;
+        lastPassedPlayer = null;
+        othelloView.restartOnline(myColor);
+        updateTurnDisplay("black");
     }
 
     private void showOpponentLeftDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("対戦終了")
                 .setMessage("相手が退出しました")
-                .setPositiveButton("閉じる", (dialog, which) -> finish())
+                .setPositiveButton("終わる", (dialog, which) -> finish())
                 .setCancelable(false)
                 .show();
     }
