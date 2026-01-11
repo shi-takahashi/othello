@@ -53,33 +53,31 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCpuBattle"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:text="CPU対戦"
-                android:textSize="20sp"
+                android:layout_height="72dp"
+                android:text="はじめる"
+                android:textSize="24sp"
                 android:textColor="#2E7D32"
                 app:backgroundTint="#FFFFFF"
-                app:cornerRadius="12dp"
-                app:icon="@drawable/ic_cpu"
-                app:iconTint="#2E7D32"
-                app:iconGravity="textStart"
-                app:iconPadding="12dp"
-                android:layout_marginBottom="20dp" />
+                app:cornerRadius="16dp"
+                android:layout_marginBottom="32dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnFriendBattle"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="24dp"
                 android:text="友達対戦"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textColor="#FFFFFF"
-                app:backgroundTint="#1B5E20"
-                app:cornerRadius="12dp"
-                app:strokeColor="#A5D6A7"
+                app:backgroundTint="#40FFFFFF"
+                app:strokeColor="#FFFFFF"
                 app:strokeWidth="2dp"
+                app:cornerRadius="12dp"
                 app:icon="@drawable/ic_people"
                 app:iconTint="#FFFFFF"
                 app:iconGravity="textStart"
-                app:iconPadding="12dp" />
+                app:iconPadding="8dp"
+                app:rippleColor="#80FFFFFF" />
 
         </LinearLayout>
 
