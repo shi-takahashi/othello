@@ -76,7 +76,8 @@
                             android:layout_width="0dp"
                             android:layout_height="44dp"
                             android:layout_weight="1"
-                            android:text="弱い"
+                            android:text="Lv1"
+                            android:textAllCaps="false"
                             android:textColor="@color/setting_text_primary"
                             app:cornerRadius="8dp"
                             app:strokeColor="@color/setting_card_stroke" />
@@ -87,7 +88,8 @@
                             android:layout_width="0dp"
                             android:layout_height="44dp"
                             android:layout_weight="1"
-                            android:text="普通"
+                            android:text="Lv2"
+                            android:textAllCaps="false"
                             android:textColor="@color/setting_text_primary"
                             app:cornerRadius="8dp"
                             app:strokeColor="@color/setting_card_stroke" />
@@ -98,7 +100,8 @@
                             android:layout_width="0dp"
                             android:layout_height="44dp"
                             android:layout_weight="1"
-                            android:text="強い"
+                            android:text="Lv3"
+                            android:textAllCaps="false"
                             android:textColor="@color/setting_text_primary"
                             app:cornerRadius="8dp"
                             app:strokeColor="@color/setting_card_stroke" />

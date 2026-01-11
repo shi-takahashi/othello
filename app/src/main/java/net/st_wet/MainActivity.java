@@ -250,13 +250,13 @@ public class MainActivity extends AppCompatActivity
         String levelStr;
         switch (level) {
             case 1:
-                levelStr = "弱い";
+                levelStr = "Lv1";
                 break;
             case 3:
-                levelStr = "強い";
+                levelStr = "Lv3";
                 break;
             default:
-                levelStr = "普通";
+                levelStr = "Lv2";
                 break;
         }
 
