@@ -1,7 +1,9 @@
 package net.st_wet;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -13,6 +15,8 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 
 public class SettingActivity extends AppCompatActivity
 {
+    private static final String PREF_SKIP_QUICK_SETTINGS = "skipQuickSettings";
+
     private int level = 0;
     private boolean isFirst = true;
     private int handicapTarget = 0;  // 0=なし, 1=自分, 2=相手
@@ -22,6 +26,7 @@ public class SettingActivity extends AppCompatActivity
     private boolean isShowLastMove = true;
     private boolean isSoundEnabled = true;
     private boolean isReset = false;
+    private boolean isShowQuickSettings = true;
 
     private MaterialButtonToggleGroup levelToggleGroup;
     private MaterialButtonToggleGroup tebanToggleGroup;
@@ -34,6 +39,7 @@ public class SettingActivity extends AppCompatActivity
     private SwitchMaterial switchShowLastMove;
     private SwitchMaterial switchSound;
     private SwitchMaterial switchReset;
+    private SwitchMaterial switchShowQuickSettings;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,6 +70,11 @@ public class SettingActivity extends AppCompatActivity
         switchShowLastMove = findViewById(R.id.switchShowLastMove);
         switchSound = findViewById(R.id.switchSound);
         switchReset = findViewById(R.id.switchReset);
+        switchShowQuickSettings = findViewById(R.id.switchShowQuickSettings);
+
+        // SharedPreferencesから起動時ダイアログ設定を読み込み
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        isShowQuickSettings = !pref.getBoolean(PREF_SKIP_QUICK_SETTINGS, false);
 
         loadLevel();
         loadTeban();
@@ -170,6 +181,11 @@ public class SettingActivity extends AppCompatActivity
             isSoundEnabled = isChecked;
         });
 
+        switchShowQuickSettings.setChecked(isShowQuickSettings);
+        switchShowQuickSettings.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isShowQuickSettings = isChecked;
+        });
+
         switchReset.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isReset = isChecked;
         });
@@ -178,6 +194,11 @@ public class SettingActivity extends AppCompatActivity
         findViewById(R.id.btnOk).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // 起動時ダイアログ設定をSharedPreferencesに保存
+                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(SettingActivity.this).edit();
+                editor.putBoolean(PREF_SKIP_QUICK_SETTINGS, !isShowQuickSettings);
+                editor.apply();
+
                 Intent intent = new Intent();
                 intent.putExtra("level", level);
                 intent.putExtra("first", isFirst);
