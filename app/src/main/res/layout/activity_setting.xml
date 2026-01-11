@@ -57,7 +57,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:text="コンピューターの強さ"
+                        android:text="相手の強さ"
                         android:textColor="@color/setting_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
