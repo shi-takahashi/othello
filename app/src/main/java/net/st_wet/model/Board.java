@@ -339,7 +339,7 @@ public class Board implements Cloneable
         E_STATUS oppStatus = Cell.getOppositeStatus(status);
         int myMobility = getCanPutRCs(status).size();
         int oppMobility = getCanPutRCs(oppStatus).size();
-        score += (myMobility - oppMobility) * 20;
+        score += (myMobility - oppMobility) * 10;
 
         return score;
     }

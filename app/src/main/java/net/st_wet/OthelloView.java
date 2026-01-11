@@ -1012,6 +1012,10 @@ public class OthelloView extends View
         private static final int WEIGHT_X_SQUARE = -150;         // X打ち（角の斜め隣）のペナルティ
         private static final int WEIGHT_C_SQUARE = -50;          // C打ち（角の隣）のペナルティ
 
+        // 次善手を選ぶ確率（%）
+        private static final int LV2_SUBOPTIMAL_RATE = 10;       // Lv.2: 10%
+        private static final int LV3_SUBOPTIMAL_RATE = 5;        // Lv.3: 5%
+
         // Lv.3用：思考開始時刻とタイムアウトフラグ
         private long thinkStartTime;
         private volatile boolean isTimeout;
@@ -1021,6 +1025,7 @@ public class OthelloView extends View
         private int bestMoveC;
 
         private E_STATUS my_turn;
+        private Random cpuRandom = new Random();  // ランダム要素用
 
         public Cpu(E_STATUS my_turn) {
             this.my_turn = my_turn;
@@ -1102,8 +1107,8 @@ public class OthelloView extends View
                     // Lv.3: 超強化AI
                     thinkLv3(mBoard);
                 } else {
-                    // Lv.2: Alpha-Beta探索
-                    int score = alphaBeta(mBoard, mDepth, UNDECIDED_SCORE);
+                    // Lv.2: Alpha-Beta探索（ランダム要素付き）
+                    thinkLv2(mBoard);
                 }
 
                 // 考えている感。。
@@ -1131,11 +1136,132 @@ public class OthelloView extends View
         }
 
         /**
+         * Lv.2専用の思考ルーチン
+         * - Alpha-Beta探索
+         * - 同じ評価値の手はランダムに選択
+         * - 10%の確率で次善手を選択
+         */
+        private void thinkLv2(Board board) {
+            ArrayList<HashMap> moves = board.getCanPutRCs(this.my_turn);
+            if (moves.size() == 0) {
+                return;
+            }
+
+            if (moves.size() == 1) {
+                HashMap<String, Integer> map = moves.get(0);
+                mR = map.get("r");
+                mC = map.get("c");
+                return;
+            }
+
+            // 全ての手のスコアを計算
+            ArrayList<int[]> moveScores = new ArrayList<>();  // [r, c, score]
+            for (HashMap<String, Integer> map : moves) {
+                int r = map.get("r");
+                int c = map.get("c");
+
+                Board newBoard = board.clone();
+                newBoard.changeCell(r, c);
+                newBoard.turnOverCells(this.my_turn, r, c, false);
+                newBoard.changeTurn();
+
+                int score = -alphaBetaForLv2(newBoard, mDepth - 1, -INF, INF);
+                moveScores.add(new int[]{r, c, score});
+            }
+
+            // スコアでソート（降順）
+            moveScores.sort((a, b) -> b[2] - a[2]);
+
+            // 最善手と同スコアの手をリストアップ
+            int bestScore = moveScores.get(0)[2];
+            ArrayList<int[]> bestMoves = new ArrayList<>();
+            ArrayList<int[]> secondBestMoves = new ArrayList<>();
+            int secondBestScore = Integer.MIN_VALUE;
+
+            for (int[] ms : moveScores) {
+                if (ms[2] == bestScore) {
+                    bestMoves.add(ms);
+                } else if (ms[2] > secondBestScore) {
+                    secondBestScore = ms[2];
+                    secondBestMoves.clear();
+                    secondBestMoves.add(ms);
+                } else if (ms[2] == secondBestScore) {
+                    secondBestMoves.add(ms);
+                }
+            }
+
+            // 10%の確率で次善手を選択（次善手がある場合のみ）
+            int[] selectedMove;
+            if (secondBestMoves.size() > 0 && cpuRandom.nextInt(100) < LV2_SUBOPTIMAL_RATE) {
+                // 次善手からランダムに選択
+                selectedMove = secondBestMoves.get(cpuRandom.nextInt(secondBestMoves.size()));
+            } else {
+                // 最善手からランダムに選択
+                selectedMove = bestMoves.get(cpuRandom.nextInt(bestMoves.size()));
+            }
+
+            mR = selectedMove[0];
+            mC = selectedMove[1];
+        }
+
+        /**
+         * Lv.2用のAlpha-Beta探索（Negamax形式）
+         */
+        private int alphaBetaForLv2(Board board, int depth, int alpha, int beta) {
+            ArrayList<HashMap> moves = board.getCanPutRCs(board.getTurn());
+
+            if (moves.size() == 0 && !board.isCanPutAll(board.getOppositeTurn())) {
+                // ゲーム終了
+                board.countCell();
+                int myCount = board.getStatusCount(this.my_turn);
+                int oppCount = board.getStatusCount(Cell.getOppositeStatus(this.my_turn));
+                return (myCount - oppCount) * 1000;
+            }
+
+            if (depth == 0) {
+                return board.calcScore(this.my_turn);
+            }
+
+            if (moves.size() == 0) {
+                Board newBoard = board.clone();
+                newBoard.changeTurn();
+                return -alphaBetaForLv2(newBoard, depth, -beta, -alpha);
+            }
+
+            int bestScore = -INF;
+            for (HashMap<String, Integer> map : moves) {
+                int r = map.get("r");
+                int c = map.get("c");
+
+                Board newBoard = board.clone();
+                newBoard.changeCell(r, c);
+                newBoard.turnOverCells(newBoard.getTurn(), r, c, false);
+                newBoard.changeTurn();
+
+                int score = -alphaBetaForLv2(newBoard, depth - 1, -beta, -alpha);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                }
+                if (score > alpha) {
+                    alpha = score;
+                }
+                if (alpha >= beta) {
+                    break;
+                }
+            }
+
+            return bestScore;
+        }
+
+        /**
          * Lv.3専用の思考ルーチン
          * - 終盤完全読み
          * - 反復深化
          * - 改善された評価関数
          * - 時間制限付き探索
+         * - 同じ評価値の手はランダムに選択
+         * - 5%の確率で次善手を選択
          */
         private void thinkLv3(Board board) {
             thinkStartTime = System.currentTimeMillis();
@@ -1157,13 +1283,68 @@ public class OthelloView extends View
             // 空きマス数を計算
             int emptyCount = countEmpty(board);
 
-            if (emptyCount <= LV3_ENDGAME_THRESHOLD) {
-                // 終盤完全読み
-                thinkEndgame(board, emptyCount);
-            } else {
-                // 反復深化探索
-                thinkIterativeDeepening(board);
+            // 全ての手のスコアを計算してランダム要素を適用
+            ArrayList<int[]> moveScores = new ArrayList<>();  // [r, c, score]
+            int searchDepth = (emptyCount <= LV3_ENDGAME_THRESHOLD) ? emptyCount : LV3_NORMAL_DEPTH;
+
+            for (HashMap<String, Integer> map : moves) {
+                if (checkTimeout()) break;
+
+                int r = map.get("r");
+                int c = map.get("c");
+
+                Board newBoard = board.clone();
+                newBoard.changeCell(r, c);
+                newBoard.turnOverCells(this.my_turn, r, c, false);
+                newBoard.changeTurn();
+
+                int score;
+                if (emptyCount <= LV3_ENDGAME_THRESHOLD) {
+                    score = -endgameSearch(newBoard, emptyCount - 1, -INF, INF, this.my_turn);
+                } else {
+                    int[] result = alphaBetaLv3(newBoard, searchDepth - 1, -INF, INF, false, this.my_turn);
+                    score = -result[0];
+                }
+                moveScores.add(new int[]{r, c, score});
             }
+
+            if (moveScores.size() == 0) {
+                return;
+            }
+
+            // スコアでソート（降順）
+            moveScores.sort((a, b) -> b[2] - a[2]);
+
+            // 最善手と同スコアの手をリストアップ
+            int bestScore = moveScores.get(0)[2];
+            ArrayList<int[]> bestMoves = new ArrayList<>();
+            ArrayList<int[]> secondBestMoves = new ArrayList<>();
+            int secondBestScore = Integer.MIN_VALUE;
+
+            for (int[] ms : moveScores) {
+                if (ms[2] == bestScore) {
+                    bestMoves.add(ms);
+                } else if (ms[2] > secondBestScore) {
+                    secondBestScore = ms[2];
+                    secondBestMoves.clear();
+                    secondBestMoves.add(ms);
+                } else if (ms[2] == secondBestScore) {
+                    secondBestMoves.add(ms);
+                }
+            }
+
+            // 5%の確率で次善手を選択（次善手がある場合のみ）
+            int[] selectedMove;
+            if (secondBestMoves.size() > 0 && cpuRandom.nextInt(100) < LV3_SUBOPTIMAL_RATE) {
+                // 次善手からランダムに選択
+                selectedMove = secondBestMoves.get(cpuRandom.nextInt(secondBestMoves.size()));
+            } else {
+                // 最善手からランダムに選択
+                selectedMove = bestMoves.get(cpuRandom.nextInt(bestMoves.size()));
+            }
+
+            mR = selectedMove[0];
+            mC = selectedMove[1];
         }
 
         /**
