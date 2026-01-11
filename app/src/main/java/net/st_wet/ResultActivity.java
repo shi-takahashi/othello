@@ -108,7 +108,7 @@ public class ResultActivity extends AppCompatActivity {
         int maxDataLength = 10;
 
         // 弱いのデータセット作成
-        ChartDataResult result1 = createDataSet(data1, Color.BLACK, "弱い");
+        ChartDataResult result1 = createDataSet(data1, Color.BLACK, "vs 弱い");
         if (result1 != null) {
             dataSets.add(result1.dataSet);
             globalMin = Math.min(globalMin, result1.min);
@@ -117,7 +117,7 @@ public class ResultActivity extends AppCompatActivity {
         }
 
         // 普通のデータセット作成
-        ChartDataResult result2 = createDataSet(data2, Color.BLUE, "普通");
+        ChartDataResult result2 = createDataSet(data2, Color.BLUE, "vs 普通");
         if (result2 != null) {
             dataSets.add(result2.dataSet);
             globalMin = Math.min(globalMin, result2.min);
@@ -126,7 +126,7 @@ public class ResultActivity extends AppCompatActivity {
         }
 
         // 強いのデータセット作成
-        ChartDataResult result3 = createDataSet(data3, Color.RED, "強い");
+        ChartDataResult result3 = createDataSet(data3, Color.RED, "vs 強い");
         if (result3 != null) {
             dataSets.add(result3.dataSet);
             globalMin = Math.min(globalMin, result3.min);
