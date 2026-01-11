@@ -123,7 +123,7 @@ public class Board implements Cloneable
 
     /**
      * ハンディキャップ付きで初期化
-     * @param handicapTarget 0=なし, 1=プレイヤー(黒), 2=CPU(白)
+     * @param handicapTarget 0=なし, 1=プレイヤー(黒), 2=相手(白)
      * @param handicapCount 角の数 (1〜4)
      */
     public void init(int handicapTarget, int handicapCount) {

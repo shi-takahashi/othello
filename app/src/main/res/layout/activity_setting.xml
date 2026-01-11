@@ -30,12 +30,12 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <!-- CPU対戦セクション -->
+            <!-- コンピューター対戦セクション -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="CPU対戦"
+                android:text="コンピューター対戦"
                 android:textColor="@color/setting_text_secondary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -430,7 +430,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Reset Card (CPU対戦の成績) -->
+            <!-- Reset Card (コンピューター対戦の成績) -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/SettingCard"
                 android:layout_width="match_parent"
@@ -616,7 +616,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="タイトルでCPU対戦を選んだ時"
+                            android:text="タイトルで「はじめる」を押した時"
                             android:textColor="@color/setting_text_secondary"
                             android:textSize="12sp" />
 

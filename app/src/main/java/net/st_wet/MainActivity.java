@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity
             layoutMyInfo.setBackgroundResource(R.drawable.bg_player_active);
             layoutOpponentInfo.setBackgroundResource(R.drawable.bg_player_inactive);
         } else {
-            txtTurnStatus.setText("CPUのターンです");
+            txtTurnStatus.setText("コンピューターのターンです");
             layoutMyInfo.setBackgroundResource(R.drawable.bg_player_inactive);
             layoutOpponentInfo.setBackgroundResource(R.drawable.bg_player_active);
         }
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         String message =
-                "やっぱりオセロでは、自分のレベルに合わせてCPUの強さを3段階から選べます。\n\n" +
+                "やっぱりオセロでは、自分のレベルに合わせてコンピューターの強さを3段階から選べます。\n\n" +
                 "角に石を置いた状態から始められる「ハンディキャップ」機能も用意しています。\n\n" +
                 "さらに、毎回異なる局面からスタートできる「ランダムモード」もあります。いつもと違う対局を楽しめます。\n\n" +
                 "対戦成績は「成績」画面でいつでも確認できます。\n\n" +
@@ -696,7 +696,7 @@ public class MainActivity extends AppCompatActivity
                 targetStr = "あなた";
             } else {
                 // 相手にハンデ
-                targetStr = "CPU";
+                targetStr = "相手";
             }
 
             String text = "ハンデ: " + targetStr + "の角に" + count + "個";

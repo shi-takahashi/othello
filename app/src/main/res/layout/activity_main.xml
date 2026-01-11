@@ -140,7 +140,7 @@
                     android:id="@+id/txtOpponentColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CPU (白)"
+                    android:text="相手 (白)"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#333333" />
