@@ -31,14 +31,31 @@
                 android:textStyle="bold"
                 android:textColor="#333333" />
 
-            <TextView
-                android:id="@+id/txtRoomCode"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Room: XXXXXX"
-                android:textSize="12sp"
-                android:textColor="#666666"
-                android:layout_marginEnd="12dp" />
+                android:orientation="vertical"
+                android:layout_marginEnd="12dp"
+                android:gravity="end">
+
+                <TextView
+                    android:id="@+id/txtRoomCode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Room: XXXXXX"
+                    android:textSize="12sp"
+                    android:textColor="#666666" />
+
+                <TextView
+                    android:id="@+id/txtGameMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="11sp"
+                    android:textColor="#1976D2"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLeave"

@@ -92,10 +92,186 @@
                             android:textColor="#666666"
                             android:layout_marginBottom="16dp" />
 
+                        <!-- ハンディキャップ設定 -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:text="ハンディキャップ"
+                            android:textColor="#333333"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:text="角を与える"
+                            android:textColor="#666666"
+                            android:textSize="12sp" />
+
+                        <com.google.android.material.button.MaterialButtonToggleGroup
+                            android:id="@+id/handicapTargetToggleGroup"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            app:checkedButton="@id/handicapNone"
+                            app:selectionRequired="true"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/handicapNone"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="なし"
+                                android:textColor="#333333"
+                                android:textSize="12sp"
+                                app:cornerRadius="8dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/handicapPlayer"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="自分"
+                                android:textColor="#333333"
+                                android:textSize="12sp"
+                                app:cornerRadius="8dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/handicapOpponent"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+                                android:text="相手"
+                                android:textColor="#333333"
+                                android:textSize="12sp"
+                                app:cornerRadius="8dp" />
+
+                        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                        <LinearLayout
+                            android:id="@+id/handicapCountContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="角の数"
+                                android:textColor="#666666"
+                                android:textSize="12sp" />
+
+                            <com.google.android.material.button.MaterialButtonToggleGroup
+                                android:id="@+id/handicapCountToggleGroup"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                app:checkedButton="@id/handicapCount1"
+                                app:selectionRequired="true"
+                                app:singleSelection="true">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/handicapCount1"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="1"
+                                    android:textColor="#333333"
+                                    android:textSize="12sp"
+                                    app:cornerRadius="8dp" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/handicapCount2"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="2"
+                                    android:textColor="#333333"
+                                    android:textSize="12sp"
+                                    app:cornerRadius="8dp" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/handicapCount3"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="3"
+                                    android:textColor="#333333"
+                                    android:textSize="12sp"
+                                    app:cornerRadius="8dp" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/handicapCount4"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="4"
+                                    android:textColor="#333333"
+                                    android:textSize="12sp"
+                                    app:cornerRadius="8dp" />
+
+                            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                        </LinearLayout>
+
+                        <!-- ランダムモード -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ランダムモード"
+                                    android:textColor="#333333"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="ランダムな配置から開始"
+                                    android:textColor="#666666"
+                                    android:textSize="12sp" />
+
+                            </LinearLayout>
+
+                            <com.google.android.material.switchmaterial.SwitchMaterial
+                                android:id="@+id/switchRandomMode"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="false" />
+
+                        </LinearLayout>
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnCreateRoom"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
                             android:text="ルームを作成"
                             android:textSize="16sp"
                             app:cornerRadius="8dp" />
@@ -103,8 +279,73 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- 待機中表示（ルーム作成とルーム参加の間に表示） -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardWaiting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="#E3F2FD">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:gravity="center_horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="相手を待っています..."
+                            android:textSize="16sp"
+                            android:textColor="#1976D2"
+                            android:layout_marginBottom="16dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ルームコード"
+                            android:textSize="14sp"
+                            android:textColor="#666666"
+                            android:layout_marginBottom="8dp" />
+
+                        <TextView
+                            android:id="@+id/txtRoomCode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="XXXXXX"
+                            android:textSize="32sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2"
+                            android:letterSpacing="0.3"
+                            android:layout_marginBottom="16dp" />
+
+                        <ProgressBar
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCancelWaiting"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="キャンセル"
+                            android:textSize="16sp"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            app:backgroundTint="#FFEBEE"
+                            android:textColor="#D32F2F"
+                            app:cornerRadius="8dp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- ルーム参加セクション -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardJoinRoom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
@@ -163,69 +404,6 @@
                             android:textSize="16sp"
                             android:textColor="#FFFFFF"
                             app:backgroundTint="#4CAF50"
-                            app:cornerRadius="8dp" />
-
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- 待機中表示 -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardWaiting"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="#E3F2FD">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp"
-                        android:gravity="center_horizontal">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="相手を待っています..."
-                            android:textSize="16sp"
-                            android:textColor="#1976D2"
-                            android:layout_marginBottom="16dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ルームコード"
-                            android:textSize="14sp"
-                            android:textColor="#666666"
-                            android:layout_marginBottom="8dp" />
-
-                        <TextView
-                            android:id="@+id/txtRoomCode"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="XXXXXX"
-                            android:textSize="32sp"
-                            android:textStyle="bold"
-                            android:textColor="#1976D2"
-                            android:letterSpacing="0.3"
-                            android:layout_marginBottom="16dp" />
-
-                        <ProgressBar
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnCancelWaiting"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="キャンセル"
-                            android:textSize="16sp"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            app:backgroundTint="#FFEBEE"
-                            android:textColor="#D32F2F"
                             app:cornerRadius="8dp" />
 
                     </LinearLayout>

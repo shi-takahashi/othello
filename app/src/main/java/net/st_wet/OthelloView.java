@@ -580,6 +580,15 @@ public class OthelloView extends View
         return sb.toString();
     }
 
+    /**
+     * ランダム盤面を生成して文字列として返す（オンライン対戦用）
+     * CPU対戦と同じ公平性チェックを行う
+     */
+    public String generateRandomBoardString() {
+        setupRandomBoard();
+        return getCellsStatus();
+    }
+
     public String getHistory() {
         return this.mHistory;
     }

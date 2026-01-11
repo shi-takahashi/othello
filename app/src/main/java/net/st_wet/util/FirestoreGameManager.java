@@ -50,6 +50,9 @@ public class FirestoreGameManager {
         public Integer lastMoveCol;
         public String winner;
         public String passedPlayer;  // パスしたプレイヤー ("black" or "white" or null)
+        public int handicapTarget;   // 0=なし, 1=黒にハンデ, 2=白にハンデ
+        public int handicapCount;    // 1-4
+        public boolean isRandomMode;
 
         public static GameState fromDocument(DocumentSnapshot doc) {
             GameState state = new GameState();
@@ -62,6 +65,9 @@ public class FirestoreGameManager {
             state.lastMoveCol = doc.getLong("lastMoveCol") != null ? doc.getLong("lastMoveCol").intValue() : null;
             state.winner = doc.getString("winner");
             state.passedPlayer = doc.getString("passedPlayer");
+            state.handicapTarget = doc.getLong("handicapTarget") != null ? doc.getLong("handicapTarget").intValue() : 0;
+            state.handicapCount = doc.getLong("handicapCount") != null ? doc.getLong("handicapCount").intValue() : 1;
+            state.isRandomMode = doc.getBoolean("isRandomMode") != null && doc.getBoolean("isRandomMode");
             return state;
         }
     }
@@ -86,26 +92,65 @@ public class FirestoreGameManager {
     }
 
     private String getInitialBoard() {
+        return getInitialBoardWithHandicap(0, 0);
+    }
+
+    /**
+     * ハンディキャップ付きの初期盤面を生成
+     * @param handicapTarget 0=なし, 1=黒にハンデ, 2=白にハンデ
+     * @param handicapCount 角の数（1-4）
+     */
+    public static String getInitialBoardWithHandicap(int handicapTarget, int handicapCount) {
+        // 初期盤面: 0=空, 1=黒, 2=白
+        char[][] board = new char[8][8];
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                board[r][c] = '0';
+            }
+        }
+
+        // 中央4マスの初期配置
+        board[3][3] = '2';  // 白
+        board[3][4] = '1';  // 黒
+        board[4][3] = '1';  // 黒
+        board[4][4] = '2';  // 白
+
+        // ハンディキャップ（角）の配置
+        if (handicapTarget != 0 && handicapCount > 0) {
+            char handicapColor = (handicapTarget == 1) ? '1' : '2';  // 1=黒にハンデ, 2=白にハンデ
+            int[][] corners = {{0, 0}, {7, 7}, {0, 7}, {7, 0}};  // 左上, 右下, 右上, 左下
+            for (int i = 0; i < handicapCount && i < 4; i++) {
+                board[corners[i][0]][corners[i][1]] = handicapColor;
+            }
+        }
+
+        // 文字列に変換
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 64; i++) {
-            int row = i / 8;
-            int col = i % 8;
-            if ((row == 3 && col == 3) || (row == 4 && col == 4)) {
-                sb.append("2");
-            } else if ((row == 3 && col == 4) || (row == 4 && col == 3)) {
-                sb.append("1");
-            } else {
-                sb.append("0");
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                sb.append(board[r][c]);
             }
         }
         return sb.toString();
     }
 
     public void createRoom(OnRoomCreatedListener listener) {
+        createRoom(getInitialBoard(), 0, 0, false, listener);
+    }
+
+    /**
+     * ハンディキャップ/ランダムモード対応のルーム作成
+     * @param initialBoard 初期盤面文字列
+     * @param handicapTarget 0=なし, 1=黒にハンデ, 2=白にハンデ
+     * @param handicapCount 角の数（1-4）
+     * @param isRandomMode ランダムモードかどうか
+     */
+    public void createRoom(String initialBoard, int handicapTarget, int handicapCount,
+                           boolean isRandomMode, OnRoomCreatedListener listener) {
         String roomCode = generateRoomCode();
 
         Map<String, Object> gameData = new HashMap<>();
-        gameData.put("board", getInitialBoard());
+        gameData.put("board", initialBoard);
         gameData.put("currentTurn", "black");
         gameData.put("playerBlack", deviceId);
         gameData.put("playerWhite", null);
@@ -113,6 +158,9 @@ public class FirestoreGameManager {
         gameData.put("lastMoveRow", null);
         gameData.put("lastMoveCol", null);
         gameData.put("winner", null);
+        gameData.put("handicapTarget", handicapTarget);
+        gameData.put("handicapCount", handicapCount);
+        gameData.put("isRandomMode", isRandomMode);
         gameData.put("createdAt", FieldValue.serverTimestamp());
         gameData.put("updatedAt", FieldValue.serverTimestamp());
 
@@ -120,7 +168,7 @@ public class FirestoreGameManager {
                 .get()
                 .addOnSuccessListener(doc -> {
                     if (doc.exists()) {
-                        createRoom(listener);
+                        createRoom(initialBoard, handicapTarget, handicapCount, isRandomMode, listener);
                     } else {
                         db.collection(COLLECTION_GAMES).document(roomCode)
                                 .set(gameData)

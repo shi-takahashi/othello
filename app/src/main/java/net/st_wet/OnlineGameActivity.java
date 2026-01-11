@@ -26,6 +26,7 @@ public class OnlineGameActivity extends AppCompatActivity {
     private OthelloView othelloView;
 
     private TextView txtRoomCode;
+    private TextView txtGameMode;
     private TextView txtMyColor;
     private TextView txtOpponentColor;
     private TextView txtMyCount;
@@ -38,6 +39,10 @@ public class OnlineGameActivity extends AppCompatActivity {
 
     private String roomCode;
     private String myColor;
+    private int handicapTarget = 0;
+    private int handicapCount = 1;
+    private boolean isRandomMode = false;
+    private boolean gameModeDisplayed = false;  // モード表示済みフラグ
     private boolean gameEnded = false;
     private Integer lastAppliedMoveRow = null;
     private Integer lastAppliedMoveCol = null;
@@ -56,6 +61,9 @@ public class OnlineGameActivity extends AppCompatActivity {
 
         roomCode = getIntent().getStringExtra("roomCode");
         myColor = getIntent().getStringExtra("myColor");
+        handicapTarget = getIntent().getIntExtra("handicapTarget", 0);
+        handicapCount = getIntent().getIntExtra("handicapCount", 1);
+        isRandomMode = getIntent().getBooleanExtra("isRandomMode", false);
 
         if (roomCode == null || myColor == null) {
             Toast.makeText(this, "エラーが発生しました", Toast.LENGTH_SHORT).show();
@@ -73,6 +81,7 @@ public class OnlineGameActivity extends AppCompatActivity {
     private void initViews() {
         othelloView = findViewById(R.id.othelloView);
         txtRoomCode = findViewById(R.id.txtRoomCode);
+        txtGameMode = findViewById(R.id.txtGameMode);
         txtMyColor = findViewById(R.id.txtMyColor);
         txtOpponentColor = findViewById(R.id.txtOpponentColor);
         txtMyCount = findViewById(R.id.txtMyCount);
@@ -84,6 +93,9 @@ public class OnlineGameActivity extends AppCompatActivity {
 
         txtRoomCode.setText("Room: " + roomCode);
 
+        // モード表示（ルーム作成者側のみ、Intentから取得）
+        updateGameModeDisplay();
+
         btnLeave.setOnClickListener(v -> showLeaveConfirmation());
 
         // AdMob初期化
@@ -91,6 +103,28 @@ public class OnlineGameActivity extends AppCompatActivity {
         adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+    }
+
+    private void updateGameModeDisplay() {
+        if (gameModeDisplayed) return;
+
+        if (isRandomMode) {
+            txtGameMode.setText("ランダムモード");
+            txtGameMode.setVisibility(View.VISIBLE);
+            gameModeDisplayed = true;
+        } else if (handicapTarget != 0) {
+            String targetStr;
+            if ("black".equals(myColor)) {
+                // 自分が黒の場合
+                targetStr = (handicapTarget == 1) ? "自分" : "相手";
+            } else {
+                // 自分が白の場合
+                targetStr = (handicapTarget == 1) ? "相手" : "自分";
+            }
+            txtGameMode.setText("ハンデ: " + targetStr + "に角" + handicapCount + "個");
+            txtGameMode.setVisibility(View.VISIBLE);
+            gameModeDisplayed = true;
+        }
     }
 
     private void setupGame() {
@@ -176,6 +210,14 @@ public class OnlineGameActivity extends AppCompatActivity {
 
         Log.d(TAG, "handleGameStateChange: status=" + state.status + ", currentTurn=" + state.currentTurn
                 + ", winner=" + state.winner + ", gameEnded=" + gameEnded);
+
+        // 参加者側はFirestoreからモード情報を取得（初回のみ）
+        if (!gameModeDisplayed) {
+            handicapTarget = state.handicapTarget;
+            handicapCount = state.handicapCount;
+            isRandomMode = state.isRandomMode;
+            updateGameModeDisplay();
+        }
 
         // ゲーム終了判定を先に行う（確実に実行されるように）
         if ("finished".equals(state.status) && !gameEnded) {
