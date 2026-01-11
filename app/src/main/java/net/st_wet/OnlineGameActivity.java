@@ -1,7 +1,9 @@
 package net.st_wet;
 
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -81,6 +83,14 @@ public class OnlineGameActivity extends AppCompatActivity {
 
     private void initViews() {
         othelloView = findViewById(R.id.othelloView);
+
+        // SharedPreferencesから設定を読み込んで適用
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean isShowLastMove = pref.getBoolean("showLastMove", true);
+        boolean isSoundEnabled = pref.getBoolean("soundEnabled", true);
+        othelloView.setShowLastMove(isShowLastMove);
+        othelloView.setSoundEnabled(isSoundEnabled);
+
         txtRoomCode = findViewById(R.id.txtRoomCode);
         txtGameMode = findViewById(R.id.txtGameMode);
         txtMyColor = findViewById(R.id.txtMyColor);
