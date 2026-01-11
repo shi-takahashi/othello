@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="強さ"
+            android:text="コンピューターの強さ"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="#333333"
@@ -35,7 +35,7 @@
                 android:layout_width="0dp"
                 android:layout_height="44dp"
                 android:layout_weight="1"
-                android:text="Lv1"
+                android:text="弱い"
                 android:textSize="14sp"
                 android:textColor="#333333"
                 app:cornerRadius="8dp" />
@@ -46,7 +46,7 @@
                 android:layout_width="0dp"
                 android:layout_height="44dp"
                 android:layout_weight="1"
-                android:text="Lv2"
+                android:text="普通"
                 android:textSize="14sp"
                 android:textColor="#333333"
                 app:cornerRadius="8dp" />
@@ -57,7 +57,7 @@
                 android:layout_width="0dp"
                 android:layout_height="44dp"
                 android:layout_weight="1"
-                android:text="Lv3"
+                android:text="強い"
                 android:textSize="14sp"
                 android:textColor="#333333"
                 app:cornerRadius="8dp" />

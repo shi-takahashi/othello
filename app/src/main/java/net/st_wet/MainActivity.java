@@ -247,17 +247,28 @@ public class MainActivity extends AppCompatActivity
         // 現在のレベルを取得
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         int level = pref.getInt("level", 2);
-        String levelStr = "Lv." + level;
+        String levelStr;
+        switch (level) {
+            case 1:
+                levelStr = "弱い";
+                break;
+            case 3:
+                levelStr = "強い";
+                break;
+            default:
+                levelStr = "普通";
+                break;
+        }
 
         // 自分と相手のカウントを設定
         if (myTurn == E_STATUS.Black) {
             txtMyColor.setText("あなた (黒)");
-            txtOpponentColor.setText(levelStr + " (白)");
+            txtOpponentColor.setText("相手 (白)");
             txtMyCount.setText(String.valueOf(blackCount));
             txtOpponentCount.setText(String.valueOf(whiteCount));
         } else {
             txtMyColor.setText("あなた (白)");
-            txtOpponentColor.setText(levelStr + " (黒)");
+            txtOpponentColor.setText("相手 (黒)");
             txtMyCount.setText(String.valueOf(whiteCount));
             txtOpponentCount.setText(String.valueOf(blackCount));
         }
@@ -274,7 +285,7 @@ public class MainActivity extends AppCompatActivity
             layoutMyInfo.setBackgroundResource(R.drawable.bg_player_active);
             layoutOpponentInfo.setBackgroundResource(R.drawable.bg_player_inactive);
         } else {
-            txtTurnStatus.setText("コンピューターのターンです");
+            txtTurnStatus.setText("相手（" + levelStr + "）のターンです");
             layoutMyInfo.setBackgroundResource(R.drawable.bg_player_inactive);
             layoutOpponentInfo.setBackgroundResource(R.drawable.bg_player_active);
         }

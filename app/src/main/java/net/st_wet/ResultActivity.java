@@ -44,14 +44,14 @@ public class ResultActivity extends AppCompatActivity {
         int[] random_data3 = intent.getIntArrayExtra("randomLevel3");
 
         // 通常モードの成績テキストを更新
-        updateScoreText(R.id.textLv1, "Lv.1", chart_data1);
-        updateScoreText(R.id.textLv2, "Lv.2", chart_data2);
-        updateScoreText(R.id.textLv3, "Lv.3", chart_data3);
+        updateScoreText(R.id.textLv1, "vs 弱い", chart_data1);
+        updateScoreText(R.id.textLv2, "vs 普通", chart_data2);
+        updateScoreText(R.id.textLv3, "vs 強い", chart_data3);
 
         // ランダムモードの成績テキストを更新
-        updateScoreText(R.id.textRandomLv1, "Lv.1", random_data1);
-        updateScoreText(R.id.textRandomLv2, "Lv.2", random_data2);
-        updateScoreText(R.id.textRandomLv3, "Lv.3", random_data3);
+        updateScoreText(R.id.textRandomLv1, "vs 弱い", random_data1);
+        updateScoreText(R.id.textRandomLv2, "vs 普通", random_data2);
+        updateScoreText(R.id.textRandomLv3, "vs 強い", random_data3);
 
         // 通常モードのグラフを作成
         createCombinedChart(R.id.line_chart, chart_data1, chart_data2, chart_data3);
@@ -99,7 +99,7 @@ public class ResultActivity extends AppCompatActivity {
         LineChart mChart = findViewById(chartId);
 
         // データがない場合のメッセージを設定
-        mChart.setNoDataText("同じレベルで10回以上プレイすると\nグラフが表示されます");
+        mChart.setNoDataText("同じ強さで10回以上プレイすると\nグラフが表示されます");
 
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -107,8 +107,8 @@ public class ResultActivity extends AppCompatActivity {
         float globalMax = 10;
         int maxDataLength = 10;
 
-        // Lv1のデータセット作成
-        ChartDataResult result1 = createDataSet(data1, Color.BLACK, "Lv1");
+        // 弱いのデータセット作成
+        ChartDataResult result1 = createDataSet(data1, Color.BLACK, "弱い");
         if (result1 != null) {
             dataSets.add(result1.dataSet);
             globalMin = Math.min(globalMin, result1.min);
@@ -116,8 +116,8 @@ public class ResultActivity extends AppCompatActivity {
             maxDataLength = Math.max(maxDataLength, result1.dataLength);
         }
 
-        // Lv2のデータセット作成
-        ChartDataResult result2 = createDataSet(data2, Color.BLUE, "Lv2");
+        // 普通のデータセット作成
+        ChartDataResult result2 = createDataSet(data2, Color.BLUE, "普通");
         if (result2 != null) {
             dataSets.add(result2.dataSet);
             globalMin = Math.min(globalMin, result2.min);
@@ -125,8 +125,8 @@ public class ResultActivity extends AppCompatActivity {
             maxDataLength = Math.max(maxDataLength, result2.dataLength);
         }
 
-        // Lv3のデータセット作成
-        ChartDataResult result3 = createDataSet(data3, Color.RED, "Lv3");
+        // 強いのデータセット作成
+        ChartDataResult result3 = createDataSet(data3, Color.RED, "強い");
         if (result3 != null) {
             dataSets.add(result3.dataSet);
             globalMin = Math.min(globalMin, result3.min);

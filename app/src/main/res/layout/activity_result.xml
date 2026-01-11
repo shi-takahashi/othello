@@ -43,7 +43,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
                     android:textColor="@android:color/black"
-                    android:text="Lv.1  0勝0敗　0点" />
+                    android:text="vs 弱い  0勝0敗　0点" />
 
                 <TextView
                     android:id="@+id/textLv2"
@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
                     android:textColor="#0000FF"
-                    android:text="Lv.2  0勝0敗　0点" />
+                    android:text="vs 普通  0勝0敗　0点" />
 
                 <TextView
                     android:id="@+id/textLv3"
@@ -59,7 +59,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
                     android:textColor="#FF0000"
-                    android:text="Lv.3  0勝0敗　0点" />
+                    android:text="vs 強い  0勝0敗　0点" />
             </LinearLayout>
 
             <com.github.mikephil.charting.charts.LineChart
@@ -94,7 +94,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
                     android:textColor="@android:color/black"
-                    android:text="Lv.1  0勝0敗　0点" />
+                    android:text="vs 弱い  0勝0敗　0点" />
 
                 <TextView
                     android:id="@+id/textRandomLv2"
@@ -102,7 +102,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
                     android:textColor="#0000FF"
-                    android:text="Lv.2  0勝0敗　0点" />
+                    android:text="vs 普通  0勝0敗　0点" />
 
                 <TextView
                     android:id="@+id/textRandomLv3"
@@ -110,7 +110,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
                     android:textColor="#FF0000"
-                    android:text="Lv.3  0勝0敗　0点" />
+                    android:text="vs 強い  0勝0敗　0点" />
             </LinearLayout>
 
             <com.github.mikephil.charting.charts.LineChart
